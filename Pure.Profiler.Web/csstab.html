@@ -1,0 +1,113 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <title>一款纯CSS实现的Tab<a href='http://www.daimajiayuan.com/list-21.html' target='_blank'><u>选项卡</u></a></title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            font-size: 12px;
+            background: #666;
+        }
+
+        div, ul, li {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        a {
+            font: bold 14px/24px "微软雅黑", Verdana, Arial, Helvetica, sans-serif;
+            color: green;
+            text-decoration: none;
+        }
+
+            a:hover {
+                color: red;
+            }
+
+        .box {
+            width: 400px;
+            height: 310px;
+            margin: 10px auto;
+        }
+
+        .menu {
+            font-family: "微软雅黑", "黑体";
+            font-size: 16px;
+            color: #FFFFFF;
+            height: 40px;
+            overflow: hidden;
+        }
+
+            .menu ul {
+                margin: 0px;
+                padding: 0px;
+                list-style: none;
+            }
+
+                .menu ul li {
+                    float: left;
+                    background: #990000;
+                    list-style: none;
+                    line-height: 40px;
+                    height: 40px;
+                    margin-right: 5px;
+                }
+
+                    .menu ul li a {
+                        color: #FFFFFF;
+                        display: inline-block;
+                        ;
+                        padding: 0px 10px;
+                        line-height: 40px;
+                    }
+
+                        .menu ul li a:visited {
+                            color: #FFFFFF;
+                        }
+
+                        .menu ul li a:hover {
+                            background: #CC0000;
+                        }
+
+                        .menu ul li a:active {
+                            color: #FFFFFF;
+                        }
+
+        #tab_content {
+            height: 270px;
+            background: #FFF;
+            overflow: hidden;
+            width: 400px;
+            line-height: 22px;
+        }
+
+        #t_1, #t_2, #t_3, #t_4 {
+            height: 270px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="menu">
+            <ul>
+                <li><a href="#t_1">导航一</a></li>
+                <li><a href="#t_2">导航二</a></a></li>
+                <li><a href="#t_3">长导航三</a></li>
+                <li><a href="#t_4">长导航三长</a></li>
+            </ul>
+        </div>
+        <div id="tab_content">
+            <div id="t_1">tab_1</div>
+            <div id="t_2">
+                tab_2伦敦奥运会田径比赛将继续展开角逐，当天产生四枚金牌，男子110米栏预赛（北京时间17点10分）中国飞人刘翔将第三次站在奥运赛场，开启时隔八年重夺奥运冠军的伟大征程，而他的三大劲敌美国的梅里特、理查德森、古巴的罗伯斯也将亮相。
+            </div>
+            <div id="t_3">tab_3</div>
+            <div id="t_4">17:45刘翔第一枪</div>
+        </div>
+    </div>
+</body>
+</html>
+
+<br><br><hr> 收集于互联网，只为兴趣与学习交流，不作商业用途。来源：源码爱好者</font></p>

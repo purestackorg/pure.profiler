@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.5.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Pure.Profiler.Web</Description>
+    <PackageReleaseNotes>Pure.Profiler.Web</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Pure.Profiler.Web.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard2.0\Pure.Profiler.Web.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Handlers\icons.png" />
+    <None Remove="Handlers\json.png" />
+    <None Remove="Handlers\pureprofiler.js" />
+    <None Remove="Handlers\treeview_timeline.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Handlers\icons.png" />
+    <EmbeddedResource Include="Handlers\json.png" />
+    <EmbeddedResource Include="Handlers\pureprofiler.js" />
+    <EmbeddedResource Include="Handlers\treeview_timeline.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pure.Profiler\Pure.Profiler.csproj" />
+  </ItemGroup>
+
+</Project>
