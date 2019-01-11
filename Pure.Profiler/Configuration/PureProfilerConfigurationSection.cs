@@ -128,5 +128,12 @@ namespace Pure.Profiler.Configuration
             get { return (bool)_EnableUtcTime; }
             set { _EnableUtcTime = value; }
         }
+        private bool _EnableProfiler = true;
+
+        public bool EnableProfiler
+        {
+            get { return (bool)_EnableProfiler; }
+            set { _EnableProfiler = value; }
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Pure.Profiler.DbProfilingStorage
 {
-    public class PureProfilingEntity
+    public class TestEntity
     {
         public string SEQ { get; set; }
 

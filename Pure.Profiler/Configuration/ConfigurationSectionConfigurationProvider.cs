@@ -109,9 +109,21 @@ namespace Pure.Profiler.Configuration
 
                     }
 
+                    var EnableUtcTime = config["enableUtcTime"];
+                    if (!string.IsNullOrEmpty(EnableUtcTime))
+                    {
+                        configsection.EnableUtcTime = Convert.ToBoolean(EnableUtcTime);  
 
+                    }
 
-                    // load filters
+                    var EnableProfiler = config["enableProfiler"];
+                    if (!string.IsNullOrEmpty(EnableProfiler))
+                    {
+                        configsection.EnableProfiler = Convert.ToBoolean(EnableProfiler);
+
+                    }
+                     
+                                        // load filters
                     var filtersSection = config.GetSection("filters");
                     if (filtersSection != null)
                     {

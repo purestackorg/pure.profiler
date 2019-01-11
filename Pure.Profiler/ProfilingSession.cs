@@ -126,9 +126,12 @@ namespace Pure.Profiler
                     {
                         StringBuilder sbPureProfiler = new StringBuilder();
                         sbPureProfiler.AppendFormat("<b>Copyright:(C) {0} Benson</b>{1}{1}", DateTime.Now.ToString("yyyy"), NEWLINE);
+                        sbPureProfiler.AppendFormat("EnableProfiler:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.EnableProfiler, NEWLINE);
+
                         sbPureProfiler.AppendFormat("Provider:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.Provider, NEWLINE);
                         sbPureProfiler.AppendFormat("CircularBufferSize:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.CircularBufferSize, NEWLINE);
                         sbPureProfiler.AppendFormat("DbType:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.DbType, NEWLINE);
+                        sbPureProfiler.AppendFormat("EnableUtcTime:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.EnableUtcTime, NEWLINE);
                         sbPureProfiler.AppendFormat("ShowError:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.ShowError, NEWLINE);
                         sbPureProfiler.AppendFormat("EnableProxy:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.EnableProxy, NEWLINE);
                         sbPureProfiler.AppendFormat("ProxyBaseUrl:{0}{1}", ProfilingSession.Configuration.PureProfilerConfiguration.ProxyBaseUrl, NEWLINE);

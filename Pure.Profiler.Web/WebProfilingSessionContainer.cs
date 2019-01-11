@@ -605,24 +605,29 @@ namespace Pure.Profiler.Web
         {
             StringBuilder sbSession = new StringBuilder();
             sbSession.AppendFormat("<b>Session</b>:{0}", ProfilingSession.NEWLINE);
-            if (context == null || context.Session == null || context.Session.Keys.Count() == 0)
+            var enableSession = ServiceLocator.IsRegistered<ISession>();
+            if (enableSession == true)
             {
-                return sbSession.ToString();
-            }
+                if (context == null || context.Session == null || context.Session.Keys.Count() == 0)
+                {
+                    return sbSession.ToString();
+                }
 
 
-            var session = context.Session;
-            sbSession.AppendFormat("SessionID:{0}{1}", session.Id, ProfilingSession.NEWLINE);
-            //sbSession.AppendFormat("Timeout:{0}{1}", session.Timeout, ProfilingSession.NEWLINE);
-            //sbSession.AppendFormat("Mode:{0}{1}", session.Mode, ProfilingSession.NEWLINE);
-            //sbSession.AppendFormat("CookieMode:{0}{1}", session.CookieMode, ProfilingSession.NEWLINE);
-            sbSession.AppendFormat("IsAvailable:{0}{1}", session.IsAvailable, ProfilingSession.NEWLINE);
-            sbSession.AppendFormat("{0}", ProfilingSession.NEWLINE);
-            foreach (string key in session.Keys)
-            {
-                object o = session.GetString(key);//  session[key];
-                sbSession.AppendFormat("Key:{0}    Value:{1}    Type:{2}{3}", key, o, o != null ? o.GetType().ToString() : "", ProfilingSession.NEWLINE);
+                var session = context.Session;
+                sbSession.AppendFormat("SessionID:{0}{1}", session.Id, ProfilingSession.NEWLINE);
+                //sbSession.AppendFormat("Timeout:{0}{1}", session.Timeout, ProfilingSession.NEWLINE);
+                //sbSession.AppendFormat("Mode:{0}{1}", session.Mode, ProfilingSession.NEWLINE);
+                //sbSession.AppendFormat("CookieMode:{0}{1}", session.CookieMode, ProfilingSession.NEWLINE);
+                sbSession.AppendFormat("IsAvailable:{0}{1}", session.IsAvailable, ProfilingSession.NEWLINE);
+                sbSession.AppendFormat("{0}", ProfilingSession.NEWLINE);
+                foreach (string key in session.Keys)
+                {
+                    object o = session.GetString(key);//  session[key];
+                    sbSession.AppendFormat("Key:{0}    Value:{1}    Type:{2}{3}", key, o, o != null ? o.GetType().ToString() : "", ProfilingSession.NEWLINE);
+                }
             }
+           
             return sbSession.ToString();
         }
 

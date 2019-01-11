@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Web;
 using Pure.Profiler.Timings;
 using Pure.Profiler.Web.Import;
+using Pure.Profiler.Configuration;
 
 namespace Pure.Profiler.Web
 {
@@ -78,7 +79,7 @@ namespace Pure.Profiler.Web
                 return;
             }
                   
-            if (ProfilingSession.Disabled)
+            if (ProfilingSession.Disabled || ConfigurationHelper.LoadPureProfilerConfigurationSection().EnableProfiler == false)
             {
                 await _next.Invoke(context);
 
@@ -276,7 +277,7 @@ namespace Pure.Profiler.Web
                 sb.Append("</p>");
 
                 sb.Append("<table>");
-                sb.Append("<tr><th class=\"nowrap\">发生时间 (UTC)</th><th class=\"nowrap\">耗时 (ms)</th><th class=\"nowrap\">Http Verb</th><th class=\"nowrap\">Is Ajax</th><th class=\"nowrap\">状态码</th><th>Url地址</th></tr>");
+                sb.Append("<tr><th class=\"nowrap\">发生时间</th><th class=\"nowrap\">耗时 (ms)</th><th class=\"nowrap\">Http Verb</th><th class=\"nowrap\">Is Ajax</th><th class=\"nowrap\">状态码</th><th>Url地址</th></tr>");
                 var latestResults = ProfilingSession.CircularBuffer.OrderByDescending(r => r.Started);
                 var i = 0;
                 foreach (var result in latestResults)
@@ -358,7 +359,7 @@ namespace Pure.Profiler.Web
                 //}
 
                 //sb.Append("<table>");
-                //sb.Append("<tr><th class=\"nowrap\">Time (UTC)</th><th class=\"nowrap\">Duration (ms)</th><th>Url</th></tr>");
+                //sb.Append("<tr><th class=\"nowrap\">Time</th><th class=\"nowrap\">Duration (ms)</th><th>Url</th></tr>");
                 //var latestResults = ProfilingSession.CircularBuffer.OrderByDescending(r => r.Started);
                 //var i = 0;
                 //foreach (var result in latestResults)

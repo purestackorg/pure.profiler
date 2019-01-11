@@ -1,0 +1,21 @@
+﻿{
+  "EnableProfiler": true,
+  "circularBufferSize": 25,
+  "enableUtcTime": false,
+  "provider": null,
+  "dbType": "MySql",
+  "showError": null,
+  "storage": "Pure.Profiler.DbProfilingStorage.DatabaseProfilingStorage,Pure.Profiler.DbProfilingStorage",
+  "filters": [
+    {
+      "key": "/pureprofiler",
+      "value": "/pureprofiler",
+      "type": "Pure.Profiler.ProfilingFilters.NameContainsProfilingFilter, Pure.Profiler"
+    },
+    {
+      "key": "static files",
+      "value": "ico,jpg,js,css,svg,json,ttf,woff,woff2,eot",
+      "type": "Pure.Profiler.Web.ProfilingFilters.FileExtensionProfilingFilter, Pure.Profiler.Web"
+    }
+  ]
+}

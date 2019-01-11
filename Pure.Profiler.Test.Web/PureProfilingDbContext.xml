@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PureDataConfiguration xmlns="http://PureData.net/schemas/PureDataConfiguration.xsd">
+  <Settings
+    
+    ParameterPrefix="#{" 
+    ParameterSuffix="}"
+    ExecuteTimeout ="30"
+    DefaultPageSize="10"
+    AutoDisposeConnection ="true"
+    ValidateStopOnFirstFailure="false"
+    LoadMapperMode="FluentMapper"
+    EnableLobConverter="false"
+    LobConverterClassName="Pure.Data.Test.MyLobParameterConverter,Pure.Data.Test"
+    
+    EnableDebug="true"
+    EnableIntercept="true"
+    EnableLogError="true"
+    EnableInternalLog="false"
+    EnableOrmLog="true"
+    LogWithRawSql="false"
+    CategoryLogType="false"
+    OrmLogsPath=""
+    MaxServerLogSize="12000"
+    
+    EnableOrmCache="false"
+    CacheOrmTime="60"
+    CacheOrmSingleTime="60"
+    OrmCacheCheckPeriod="5"
+    
+    EnableSqlMap="true"
+    FormatSql="true"
+    IsWatchSqlMapFile="true"
+    NameSpacePrefix="GDCIC.AGRYGL.Domain."
+    WatchSqlMapInterval="3000"
+    
+    AutoMigrate="false"
+    AutoRemoveUnuseColumnInTable="true"
+    EnableAutoMigrateLog="true"
+    EnableAutoMigrateDebug="true"
+    CanUpdatedWhenTableExisted="true"
+    AutoMigrateOnContainTable=""
+    EnableGlobalIgnoreUpdatedColumns="true"
+    AutoFilterEmptyValueColumnsWhenTrack="true"
+    GlobalIgnoreUpdatedColumns="Id;Version;VersionRefId;SERIALNO;CreateTime;CreateUser"
+    
+    EnableCodeGen="false"
+    CodeGenClassNameMode="UpperAll"
+    CodeGenProjectName="MyCodeGen"
+    CodeGenNameSpace="MyCodeGen.Test"
+    CodeGenTableFilter="A_;B_;T_;TB_"
+    
+   
+
+  />
+
+  <DataSources >
+    <!--<DataSource Name="WriteDB"  ConnectionString="Database=test;server=localhost;port=3306;userid=root;pwd=root;sslmode=none" Provider="MYSQL"
+                IsMaster="true"  ParameterPrefix=":" Type="Write" Weight="100"  />-->
+    <!--<DataSource Name="WriteDB"  ConnectionString="Data Source=oracle44;Persist Security Info=False;User ID=webmessage;Password=123456" Provider="ORACLE" 
+                IsMaster="true"  ParameterPrefix=":" Type="Write" Weight="100"  />-->
+
+    <!--<DataSource Name="WriteDB"  ConnectionString="user id=BusiDB;password=GdcicRjk907;data source=192.168.6.51/gdcic11db" Provider="ORACLE"
+                          IsMaster="true" ParameterPrefix=":" Type="Write" Weight="20"  />-->
+
+
+    <DataSource Name="WriteDB"  ConnectionString="Database=AGRYGL;server=192.168.6.52;port=3306;userid=AGRYGL;pwd=123456;sslmode=none"  Provider="MySql.Data.MySqlClient"
+                  IsMaster="true"  ParameterPrefix="?" Type="Write" Weight="100"  />
+    
+  </DataSources>
+
+  <MapperSources>
+    <!--<MapperSource Type="File" Path="Pure.Data.Test.exe"></MapperSource>-->
+    <MapperSource Type="ClassType" ClassName="Pure.Profiler.DbProfilingStorage.PureProfilingDbContext,Pure.Profiler.DbProfilingStorage"></MapperSource>
+  </MapperSources>
+
+
+  <SqlMaps>
+    <!--<SqlMap Path="SqlMap/sql_dev.xml" Type="File"></SqlMap>-->
+    <!--<SqlMap Type="Directory"  Path="H:\AGRYGL\GDCIC.AGRYGL.Web\GDCIC.AGRYGL.Domain\DDD" ></SqlMap>--> 
+
+  </SqlMaps>
+
+  <Interceptors>
+    <!--<Interceptor Type="ConnectionInterceptor" AssemblyName="Pure.Data" ClassFullName="Pure.Data.ConnectionTestIntercept" ></Interceptor>-->
+    <Interceptor Type="ExecutingInterceptor" AssemblyName="Pure.Data" ClassFullName="Pure.Data.OutputSQLIntercept" ></Interceptor>
+    <!--<Interceptor Type="ExceptionInterceptor" AssemblyName="Pure.Data" ClassFullName="Pure.Data.OutputExceptionIntercept" ></Interceptor>-->
+    <!--<Interceptor Type="ConnectionInterceptor" AssemblyName="Pure.Data" ClassFullName="Pure.Data.ConnectionTestIntercept" ></Interceptor>-->
+    <!--<Interceptor Type="ExecutingInterceptor"  AssemblyName="" ClassFullName="" ></Interceptor>
+    <Interceptor Type="ExceptionInterceptor" AssemblyName="" ClassFullName="" ></Interceptor>
+    <Interceptor Type="DataInterceptor"  AssemblyName="" ClassFullName=""></Interceptor>
+    <Interceptor Type="TransactionInterceptor"  AssemblyName="" ClassFullName=""></Interceptor>-->
+  </Interceptors>
+ 
+
+</PureDataConfiguration>
