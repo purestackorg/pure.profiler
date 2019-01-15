@@ -23,6 +23,7 @@ namespace Pure.Profiler.DbProfilingStorage
         public static DataTable GetStatWeb( ) {
 
             string str = @"select
+HttpVerb as HttpVerb,
 Name as URI, Count(NAME)  as RequestCount,Sum(DurationMilliseconds) as SumDurationMilliseconds, 
 Avg(DurationMilliseconds) as AvgDurationMilliseconds,  
 Max(DurationMilliseconds) as MaxDurationMilliseconds,
@@ -37,7 +38,7 @@ count(case when DurationMilliseconds>1000 and DurationMilliseconds <=10000 then 
 count(case when DurationMilliseconds>10000 and DurationMilliseconds <=100000 then SEQ end) as DurationMilliseconds6,
 count(case when DurationMilliseconds>100000 then SEQ end) as DurationMilliseconds7
  from sys_pureprofiling  
-where Type ='session' group by (NAME) order by  RequestCount desc ";
+where Type ='session' group by NAME, HttpVerb order by  RequestCount desc";
 
             using (var db = new PureProfilingDbContext())
             {

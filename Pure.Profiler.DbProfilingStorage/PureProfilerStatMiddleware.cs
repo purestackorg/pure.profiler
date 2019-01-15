@@ -196,6 +196,7 @@ namespace Pure.Profiler.Web
 
                 sb.Append("<table>");
                 sb.Append("<tr><th class=\"nowrap\">序号</th>" +
+                    "<th class=\"nowrap\">HttpVerb</th>" +
                     "<th class=\"nowrap\">URI</th>" +
                     "<th class=\"nowrap\">请求次数</th>" +
                     "<th class=\"nowrap\">请求时间</th>" +
@@ -224,6 +225,8 @@ namespace Pure.Profiler.Web
                         }
                         sb.Append("><td class=\"nowrap\" style='text-align:center'>");
                         sb.Append(index.ToString());
+                        sb.Append("</td><td class=\"nowrap\">");
+                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "HttpVerb"));
                         sb.Append("</td><td class=\"\" style='word-wrap:break-word;word-break:break-all;max-width:600px;table-layout:fixed;padding-right: 20px;' >");
                         sb.Append(StatSqlCollections.GetDataRowValue(myRow, "URI"));
                         sb.Append("</td><td class=\"nowrap\">");
