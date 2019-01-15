@@ -248,6 +248,8 @@ namespace Pure.Profiler.Web
                 sb.Append("<a target='_self' href='" + ViewUrl + "'>Refresh</a>");
                 sb.Append("&nbsp; <a target='_blank' href='export?exporttype=json'>Json</a>");
                 sb.Append("&nbsp; <a target='_self' href='view/clear'>Clear</a>");
+                sb.Append("&nbsp; <a target='_blank' href='stat-web'>WebStat</a>");
+                sb.Append("&nbsp; <a target='_blank' href='stat-db'>DbStat</a>");
                 sb.Append("&nbsp; <a target='_self' href=\"#\" onclick=\"return clickGlobal();\">Global</a>");
 
                 //tab
@@ -849,14 +851,14 @@ namespace Pure.Profiler.Web
                         }
 
                    
-                    using (ProfilingSession.Current.Step(() => (err)))
+                    using (ProfilingSession.Current.Step(() => (err), ProfilingSession.FailOnErrorMark))
                     {
 
                     }
                 }
                 else
                 {
-                    using (ProfilingSession.Current.Step("Stop on Error"))
+                    using (ProfilingSession.Current.Step("Stop on Error", ProfilingSession.FailOnErrorMark))
                     {
 
 

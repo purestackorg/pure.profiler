@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.0</Version>
+    <Version>1.5.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Pure.Profiler.Web</Description>
     <PackageReleaseNotes>Pure.Profiler.Web</PackageReleaseNotes>
+    <FileVersion>1.5.2.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

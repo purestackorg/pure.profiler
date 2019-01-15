@@ -18,6 +18,7 @@ namespace Pure.Profiler.DbProfilingStorage
         /// Data filed names which should be treated as integer fields.
         /// </summary>
         public static string[] IntegerDataFieldNames { get; set; }
+        public static string[] SaveDataFieldNames { get; set; }
 
         #region Constructors
 
@@ -27,17 +28,18 @@ namespace Pure.Profiler.DbProfilingStorage
         public DatabaseProfilingStorage()
         {
             IntegerDataFieldNames = new [] { "Count", "Size", "seconds" };
+            SaveDataFieldNames = new [] { "executeType", "executeResult", "parameters" , "Http Verb", "IsAjax", "请求类型", "客户端IP", "dbCount", "dbDuration"  };
         }
+   
+    #endregion
 
-        #endregion
+    #region JsonProfilingStorage Members
 
-        #region JsonProfilingStorage Members
-
-        /// <summary>
-        /// Saves an <see cref="ITimingSession"/>.
-        /// </summary>
-        /// <param name="session"></param>
-        protected override void Save(ITimingSession session)
+    /// <summary>
+    /// Saves an <see cref="ITimingSession"/>.
+    /// </summary>
+    /// <param name="session"></param>
+    protected override void Save(ITimingSession session)
         {
             //if (!Logger.Value.IsInfoEnabled)
             //{
@@ -54,10 +56,9 @@ namespace Pure.Profiler.DbProfilingStorage
 
             using (var db = new PureProfilingDbContext())
             {
-                db.Insert<PureProfilingEntity>(v, null);
 
                 if (session.Timings == null) return;
-
+                long errorCount = 0;
                 foreach (var timing in session.Timings)
                 {
                     if (timing == null) continue;
@@ -66,11 +67,16 @@ namespace Pure.Profiler.DbProfilingStorage
                     var v2 = FormatTiming(session , timing);
 
                     db.Insert<PureProfilingEntity>(v2, null);
-
+                    errorCount += v2.ErrorCount;
                 }
+
+                v.ErrorCount = errorCount;
+
+                db.Insert<PureProfilingEntity>(v, null);
+
             }
 
-            
+
         }
 
         private PureProfilingEntity FormatTiming(ITimingSession session, ITiming timing)
@@ -89,12 +95,26 @@ namespace Pure.Profiler.DbProfilingStorage
             v.Tags = timing.Tags != null ? timing.Tags.ToString() : "";
             v.Sort = timing.Sort;
 
-            var sb = new StringBuilder();
-            sb.Append("{");
-            AppendDataFields(sb, timing.Data);
-            sb.Append("}");
 
-            v.Data = sb.ToString();
+
+            //var sb = new StringBuilder();
+            //sb.Append("{");
+            //AppendDataFields(sb, timing.Data);
+            //sb.Append("}");
+
+            //v.Data = sb.ToString();
+
+            SetAllFieldDataField(v, timing.Data);
+
+            if (timing.Tags != null && timing.Tags.Contains(ProfilingSession.FailOnErrorMark))
+            {
+                v.ErrorCount = 1;
+            }
+            else
+            {
+                v.ErrorCount = 0;
+            }
+
 
             return v;
         }
@@ -115,16 +135,54 @@ namespace Pure.Profiler.DbProfilingStorage
             v.Tags = session.Tags!= null ? session.Tags.ToString() :"";
             v.Sort = session.Sort;
 
-            var sb = new StringBuilder();
-            sb.Append("{");
-            AppendDataFields(sb, session.Data);
-            sb.Append("}");
+            //var sb = new StringBuilder();
+            //sb.Append("{");
+            //AppendDataFields(sb, session.Data);
+            //sb.Append("}");
 
-            v.Data = sb.ToString();
+            //v.Data = sb.ToString();
+
+            SetAllFieldDataField(v, session.Data);
 
             return v;
         }
+        private void SetAllFieldDataField(PureProfilingEntity v,Dictionary<string, string> data)
+        {
+            //"executeType", "executeResult", "parameters" , "Http Verb", "IsAjax", "请求类型", "客户端IP", "dbCount", "dbDuration"  
+            v.ExecuteType = GetDataField(data, "executeType");
+            var executeResult = GetDataField(data, "executeResult");
+            if (!string.IsNullOrEmpty( executeResult))
+            {
+                v.ExecuteResult = Convert.ToInt64(executeResult);
+            }
+            v.Parameters = GetDataField(data, "parameters");
+            v.HttpVerb = GetDataField(data, "Http Verb");
+            v.IsAjax = GetDataField(data, "IsAjax");
+            v.RequestType = GetDataField(data, "请求类型");
+            v.ClientIp = GetDataField(data, "客户端IP");
+            var dbCount = GetDataField(data, "dbCount");
+            if (!string.IsNullOrEmpty(dbCount))
+            {
+                v.DbCount = Convert.ToInt64(dbCount);
+            }
+            var dbDuration = GetDataField(data, "dbDuration");
+            if (!string.IsNullOrEmpty(dbDuration))
+            {
+                v.DbDuration = Convert.ToInt64(dbDuration);
+            }
+            
+        }
+        private string GetDataField( Dictionary<string, string> data, string key)
+        {
+            if (data == null) return "";
 
+            if (data.ContainsKey(key))
+            {
+                return data[key];
+            }
+
+            return "";
+        }
 
         #endregion
 

@@ -24,6 +24,17 @@ namespace Pure.Profiler.DbProfilingStorage
             Map(m => m.Sort).Description("序号").Size(500);
             Map(m => m.Data).Description("数据").Size(1000);
 
+            Map(m => m.ExecuteType).Description("执行类型").Size(50);
+            Map(m => m.ExecuteResult).Description("执行影响行数").Size(50);
+            Map(m => m.Parameters).Description("参数").Size(1000);
+            Map(m => m.HttpVerb).Description("Http动作").Size(50);
+            Map(m => m.IsAjax).Description("是否Ajax").Size(50);
+            Map(m => m.ClientIp).Description("客户端IP").Size(50);
+            Map(m => m.DbCount).Description("数据库执行次数").Size(50);
+            Map(m => m.DbDuration).Description("数据库耗时毫秒").Size(50);
+            Map(m => m.RequestType).Description("请求类型").Size(50);
+            Map(m => m.ErrorCount).Description("错误数量").Size(50);
+            
 
             AutoMap();
         }

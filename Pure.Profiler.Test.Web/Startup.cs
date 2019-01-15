@@ -59,7 +59,8 @@ namespace Pure.Profiler.Test.Web
             Pure.Data.DbProviderFactories.AddDbProviderFactories("MySql.Data.MySqlClient", MySql.Data.MySqlClient.MySqlClientFactory.Instance);
 
             #region PureProfiler
-            app.UsePureProfiler();
+            app.UsePureProfiler()
+                .UsePureProfilerStat();
             #endregion
 
 

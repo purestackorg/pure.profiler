@@ -8,6 +8,8 @@ namespace Pure.Profiler
     /// </summary>
     public static class ProfilingSessionExtensions
     {
+      
+
         /// <summary>
         /// Creates an <see cref="IProfilingStep"/> that will time the code between its creation and disposal.
         /// </summary>

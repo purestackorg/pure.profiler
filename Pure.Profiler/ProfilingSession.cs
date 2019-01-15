@@ -18,6 +18,8 @@ namespace Pure.Profiler
     /// </summary>
     public sealed class ProfilingSession : MarshalByRefObject
     {
+        public static string FailOnErrorMark = "PureProfilingFailOnErrorMark";
+
         private static Action<Exception, object> LogWriter = null;
 
         private static IProfilingSessionContainer _profilingSessionContainer;

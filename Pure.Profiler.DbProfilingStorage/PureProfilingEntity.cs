@@ -65,5 +65,19 @@ namespace Pure.Profiler.DbProfilingStorage
         /// </summary>
         //public Dictionary<string, string> Data { get; set; }
         public string Data { get; set; }
+
+
+        public string ExecuteType { get; set; }
+        public long ExecuteResult { get; set; }
+        public string Parameters { get; set; }
+        public string HttpVerb { get; set; }
+        public string IsAjax { get; set; }
+        public string ClientIp { get; set; }
+        public long DbCount { get; set; }
+        public long DbDuration { get; set; }
+        public string RequestType { get; set; }
+        public long ErrorCount { get; set; }
+
+        
     }
 }

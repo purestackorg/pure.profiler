@@ -283,24 +283,45 @@ namespace Pure.Profiler.Data
         {
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return _dbCommand.ExecuteReader();
-          
-            IDataReader reader = null;
-            reader = dbProfiler.ExecuteDbCommand(
-                DbExecuteType.Reader
-                , _command
-                , () => {reader = _dbCommand.ExecuteReader(behavior);
-                    
-                    return reader;
-                }
-                , Tags);
 
-            var profiledReader = reader as ProfiledDbDataReader;
-            if (profiledReader != null)
+            try
             {
-                return profiledReader;
+
+
+                IDataReader reader = null;
+                reader = dbProfiler.ExecuteDbCommand(
+                    DbExecuteType.Reader
+                    , _command
+                    , () => {
+                        reader = _dbCommand.ExecuteReader(behavior);
+
+                        return reader;
+                    }
+                    , Tags);
+
+                var profiledReader = reader as ProfiledDbDataReader;
+                if (profiledReader != null)
+                {
+                    return profiledReader;
+                }
+
+                return new ProfiledDbDataReader(reader, dbProfiler);
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Reader, _command, 0) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw ex;
             }
 
-            return new ProfiledDbDataReader(reader, dbProfiler);
         }
 
         IDataReader IDbCommand.ExecuteReader()
@@ -312,24 +333,44 @@ namespace Pure.Profiler.Data
         {
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return _command.ExecuteReader();
-            
-            IDataReader reader = null;
-            reader = dbProfiler.ExecuteDbCommand(
-                DbExecuteType.Reader
-                , _command
-                , () => {reader = _dbCommand.ExecuteReader(behavior);
-                    
-                    return reader;
-                }
-                , Tags);
 
-            var profiledReader = reader as ProfiledDbDataReader;
-            if (profiledReader != null)
+            try
             {
-                return profiledReader;
+
+                IDataReader reader = null;
+                reader = dbProfiler.ExecuteDbCommand(
+                    DbExecuteType.Reader
+                    , _command
+                    , () => {
+                        reader = _dbCommand.ExecuteReader(behavior);
+
+                        return reader;
+                    }
+                    , Tags);
+
+                var profiledReader = reader as ProfiledDbDataReader;
+                if (profiledReader != null)
+                {
+                    return profiledReader;
+                }
+
+                return new ProfiledDbDataReader(reader, dbProfiler);
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Reader, _command, 0) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw ex;
             }
 
-            return new ProfiledDbDataReader(reader, dbProfiler);
         }
 
         /// <summary>
@@ -341,10 +382,28 @@ namespace Pure.Profiler.Data
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return _command.ExecuteNonQuery();
 
-            int affected = 0;
-            dbProfiler.ExecuteDbCommand(
-                DbExecuteType.NonQuery, _command, () => { affected = _command.ExecuteNonQuery(); return affected; }, Tags);
-            return affected;
+            try
+            {
+                int affected = 0;
+                dbProfiler.ExecuteDbCommand(
+                    DbExecuteType.NonQuery, _command, () => { affected = _command.ExecuteNonQuery(); return affected; }, Tags);
+                return affected;
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.NonQuery, _command, 0) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw ex;
+            }
+        
         }
 
         /// <summary>
@@ -356,10 +415,28 @@ namespace Pure.Profiler.Data
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return _command.ExecuteScalar();
 
-            object returnValue = null;
-            dbProfiler.ExecuteDbCommand(
-                DbExecuteType.Scalar, _command, () => { returnValue = _command.ExecuteScalar(); return returnValue; }, Tags);
-            return returnValue;
+            try
+            {
+                object returnValue = null;
+                dbProfiler.ExecuteDbCommand(
+                    DbExecuteType.Scalar, _command, () => { returnValue = _command.ExecuteScalar(); return returnValue; }, Tags);
+                return returnValue;
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Scalar, _command, null) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw ex;
+            }
+           
         }
 
         /// <summary>
