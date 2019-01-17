@@ -183,7 +183,7 @@ namespace Pure.Profiler.Web
                 sb.Append("<title>Web URI监控</title>");
                 sb.Append("<link rel=\"stylesheet\" href=\"./pureprofiler-resources/css\" />");
                 sb.Append("<script type=\"text/javascript\" src=\"./pureprofiler-resources/js\"></script>");
-                sb.Append("<style>th {   text-align: left;background: #BD6840;color: #fff;font-size: 14px; } .gray { background-color: #eee; } .pure-profiler-error-row {  color: #f00 ; } .nowrap { white-space: nowrap;padding-right: 20px; vertical-align:top; } </style>");
+                sb.Append("<style>table a{text-decoration: none !important;} th {   text-align: left;background: #BD6840;color: #fff;font-size: 14px; } .gray { background-color: #eee; } .pure-profiler-error-row {  color: #f00 ; } .nowrap { white-space: nowrap;padding-right: 20px; vertical-align:top; } </style>");
                 sb.Append("</head");
                 sb.Append("<body class='pureprofiler-pagebody' style=\"background:#EAF2FF;z-index:99999;\">");
                 sb.Append(ViewResultIndexHeaderHtml);
@@ -211,7 +211,7 @@ namespace Pure.Profiler.Web
                 if (DtStatWebData != null)
                 {
                     int i = 0;
-                    int index = 1;
+                    int index = 1; string sqlStr = "", sqlStrTmp = "";
                     foreach (DataRow myRow in DtStatWebData.Rows)
                     {
                         sb.Append("<tr");
@@ -228,7 +228,25 @@ namespace Pure.Profiler.Web
                         sb.Append("</td><td class=\"nowrap\">");
                         sb.Append(StatSqlCollections.GetDataRowValue(myRow, "HttpVerb"));
                         sb.Append("</td><td class=\"\" style='word-wrap:break-word;word-break:break-all;max-width:600px;table-layout:fixed;padding-right: 20px;' >");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "URI"));
+
+ 
+                        sqlStr = StatSqlCollections.GetDataRowValue(myRow, "URI");
+                        //if (sqlStr != null)
+                        //{
+                        //    sqlStr = sqlStr.ToLower();
+                        //}
+                        //if (sqlStr != null && sqlStr.Length > 58)
+                        //{
+                        //    sqlStrTmp = sqlStr.Substring(0, 58) + "... ";
+                        //}
+                        //else
+                        //{
+                            sqlStrTmp = sqlStr;
+                        //}
+
+                        sb.Append("<a title='" + sqlStr + "' href='javascript:void(0)'>" + sqlStrTmp + "</a>");
+
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "URI"));
                         sb.Append("</td><td class=\"nowrap\">");
                         sb.Append(StatSqlCollections.GetDataRowValue(myRow, "RequestCount"));
                         sb.Append("</td><td class=\"nowrap\">");
@@ -289,7 +307,7 @@ namespace Pure.Profiler.Web
                 sb.Append("<title>SQL Stat监控</title>");
                 sb.Append("<link rel=\"stylesheet\" href=\"./pureprofiler-resources/css\" />");
                 sb.Append("<script type=\"text/javascript\" src=\"./pureprofiler-resources/js\"></script>");
-                sb.Append("<style>th {   text-align: left;background: #BD6840;color: #fff;font-size: 14px; } .gray { background-color: #eee; } .pure-profiler-error-row {  color: #f00 ; } .nowrap { white-space: nowrap;padding-right: 20px; vertical-align:top; } </style>");
+                sb.Append("<style>table a{text-decoration: none !important;} th {   text-align: left;background: #BD6840;color: #fff;font-size: 14px; } .gray { background-color: #eee; } .pure-profiler-error-row {  color: #f00 ; } .nowrap { white-space: nowrap;padding-right: 20px; vertical-align:top; } </style>");
                 sb.Append("</head");
                 sb.Append("<body class='pureprofiler-pagebody' style=\"background:#EAF2FF;z-index:99999;\">");
                 sb.Append(DbViewResultIndexHeaderHtml);
@@ -318,6 +336,7 @@ namespace Pure.Profiler.Web
                     
                     int i = 0;
                     int index = 1;
+                    string sqlStr = "", sqlStrTmp = "" ;
                     foreach (DataRow myRow in DtStatWebData.Rows)
                     {
                         sb.Append("<tr");
@@ -332,7 +351,24 @@ namespace Pure.Profiler.Web
                         sb.Append("><td class=\"nowrap\" style='text-align:center'>");
                         sb.Append(index.ToString());
                         sb.Append("</td><td class=\"\" style='word-wrap:break-word;word-break:break-all;max-width:600px;table-layout:fixed;padding-right: 20px;' >");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SQLStr"));
+
+                        sqlStr = StatSqlCollections.GetDataRowValue(myRow, "SQLStr");
+                        if (sqlStr != null)
+                        {
+                            sqlStr = sqlStr.ToLower();
+                        }
+                        if (sqlStr != null && sqlStr.Length > 58)
+                        {
+                            sqlStrTmp = sqlStr.Substring(0, 58) + "... ";
+                        }
+                        else
+                        {
+                            sqlStrTmp = sqlStr;
+                        }
+
+                        sb.Append( "<a title='"+ sqlStr + "' href='javascript:void(0)'>"+ sqlStrTmp + "</a>");
+
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SQLStr"));
                         sb.Append("</td><td class=\"nowrap\">");
                         sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ExecuteType"));
                         sb.Append("</td><td class=\"nowrap\">");
