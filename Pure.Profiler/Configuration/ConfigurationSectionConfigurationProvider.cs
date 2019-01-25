@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Pure.Profiler.ProfilingFilters;
@@ -18,10 +19,14 @@ namespace Pure.Profiler.Configuration
         public static IConfiguration GetConfiguration()
         {
             return new ConfigurationBuilder()
-               .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+               .SetBasePath(Directory.GetCurrentDirectory())//(AppDomain.CurrentDomain.BaseDirectory)
                .AddJsonFile("pureprofiler.json", true)
                .Build();
         }
+        public const string LoginUrl = "/pureprofiler/login";
+
+        public const string AuthCookieName = "PureProfilerAuthSessionId";
+
         private static PureProfilerConfigurationSection configsection = null;
         private static object olock = new object();
         public static PureProfilerConfigurationSection LoadPureProfilerConfigurationSection()
@@ -122,8 +127,39 @@ namespace Pure.Profiler.Configuration
                         configsection.EnableProfiler = Convert.ToBoolean(EnableProfiler);
 
                     }
-                     
-                                        // load filters
+
+                    var RootBaseUrl = config["rootBaseUrl"];
+                    if (!string.IsNullOrEmpty(RootBaseUrl))
+                    {
+                        configsection.RootBaseUrl = RootBaseUrl;
+
+                    }
+
+
+                    var EnableAuth = config["enableAuth"];
+                    if (!string.IsNullOrEmpty(EnableAuth))
+                    {
+                        configsection.EnableAuth = Convert.ToBoolean(EnableAuth);
+
+                    }
+
+
+                    var AuthAccount = config["authAccount"];
+                    if (!string.IsNullOrEmpty(AuthAccount))
+                    {
+                        configsection.AuthAccount = AuthAccount;
+
+                    }
+
+
+                    var AuthPassword = config["authPassword"];
+                    if (!string.IsNullOrEmpty(AuthPassword))
+                    {
+                        configsection.AuthPassword = AuthPassword;
+
+                    }
+
+                    // load filters
                     var filtersSection = config.GetSection("filters");
                     if (filtersSection != null)
                     {

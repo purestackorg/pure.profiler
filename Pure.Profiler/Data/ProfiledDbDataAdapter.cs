@@ -17,7 +17,7 @@ namespace Pure.Profiler.Data
         /// </summary>
         /// <param name="dataAdapter">The <see cref="IDbDataAdapter"/> to be profiled.</param>
         /// <param name="dbProfiler">The <see cref="IDbProfiler"/>.</param>
-        public ProfiledDbDataAdapter(IDbDataAdapter dataAdapter, IDbProfiler dbProfiler)
+        public ProfiledDbDataAdapter(DbDataAdapter dataAdapter, IDbProfiler dbProfiler)
         {
             if (dataAdapter == null)
             {

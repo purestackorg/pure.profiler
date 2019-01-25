@@ -7,13 +7,11 @@ namespace Pure.Profiler.Data
 {
     internal sealed class DbParameterCollectionWrapper : DbParameterCollection
     {
-        private readonly IDataParameterCollection _parameterCollection;
-        private readonly DbParameterCollection _dbParameterCollection;
+        private readonly DbParameterCollection _parameterCollection;
 
-        public DbParameterCollectionWrapper(IDataParameterCollection parameterCollection)
+        public DbParameterCollectionWrapper(DbParameterCollection parameterCollection)
         {
             _parameterCollection = parameterCollection;
-            _dbParameterCollection = parameterCollection as DbParameterCollection;
         }
 
         #region DbParameterCollection Members
@@ -25,9 +23,9 @@ namespace Pure.Profiler.Data
 
         public override void AddRange(Array values)
         {
-            if (_dbParameterCollection != null)
+            if (_parameterCollection != null)
             {
-                _dbParameterCollection.AddRange(values);
+                _parameterCollection.AddRange(values);
             }
             else
             {
@@ -75,14 +73,14 @@ namespace Pure.Profiler.Data
 
         protected override DbParameter GetParameter(string parameterName)
         {
-            if (_dbParameterCollection != null && _dbParameterCollection.Contains(parameterName))
+            if (_parameterCollection != null && _parameterCollection.Contains(parameterName))
             {
-                return _dbParameterCollection[parameterName];
+                return _parameterCollection[parameterName];
             }
 
-            if (_parameterCollection.Contains(parameterName))
+            if (_parameterCollection!= null && _parameterCollection.Contains(parameterName))
             {
-                return new DbParameterWrapper(_parameterCollection[parameterName] as IDbDataParameter);
+                return new DbParameterWrapper(_parameterCollection[parameterName]);
             }
 
             return null;
@@ -95,12 +93,12 @@ namespace Pure.Profiler.Data
                 return null;
             }
 
-            if (_dbParameterCollection != null)
+            if (_parameterCollection != null)
             {
-                return _dbParameterCollection[index];
+                return _parameterCollection[index];
             }
 
-            return new DbParameterWrapper(_parameterCollection[index] as IDbDataParameter);
+            return new DbParameterWrapper(_parameterCollection[index]);
         }
 
         public override int IndexOf(string parameterName)
@@ -116,21 +114,6 @@ namespace Pure.Profiler.Data
         public override void Insert(int index, object value)
         {
             _parameterCollection.Insert(index, value);
-        }
-
-        public override bool IsFixedSize
-        {
-            get { return _parameterCollection.IsFixedSize; }
-        }
-
-        public override bool IsReadOnly
-        {
-            get { return _parameterCollection.IsReadOnly; }
-        }
-
-        public override bool IsSynchronized
-        {
-            get { return _parameterCollection.IsSynchronized; }
         }
 
         public override void Remove(object value)
@@ -165,5 +148,4 @@ namespace Pure.Profiler.Data
 
         #endregion
     }
-
 }

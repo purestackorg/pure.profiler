@@ -183,7 +183,8 @@ namespace Pure.Profiler.Storages
             do
             {
                 // Suspend for a while
-                _processWait.WaitOne(ThreadSleepMilliseconds, exitContext: false);
+                //_processWait.WaitOne(ThreadSleepMilliseconds, exitContext: false);
+				 _processWait.WaitOne(ThreadSleepMilliseconds);
 
                 // Upgrade to foreground thread
                 Thread.CurrentThread.IsBackground = false;

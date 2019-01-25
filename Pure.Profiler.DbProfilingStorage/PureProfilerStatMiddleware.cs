@@ -55,8 +55,10 @@ namespace Pure.Profiler.Web
     public class PureProfilerStatMiddleware
     {
         private readonly RequestDelegate _next;
-         
 
+
+        private const string Auth_CookieName = ConfigurationHelper.AuthCookieName;
+        private const string LoginUrl = ConfigurationHelper.LoginUrl;//"/pureprofiler/login";
 
         //private const string ViewUrl = "/pureprofiler/view";
         private const string ViewStatWebUrl = "/pureprofiler/stat-web";
@@ -103,6 +105,66 @@ namespace Pure.Profiler.Web
         {
             _next = next;
 
+        }
+
+        private void SetAuthSession(HttpContext context, string sessionStr)
+        {
+            context.Session.SetString(Auth_CookieName, sessionStr);
+        }
+
+        private string GetAuthSession(HttpContext context)
+        {
+            return context.Session.GetString(Auth_CookieName);
+        }
+        private bool Authorize(HttpContext context, string sessionStr = "")
+        {
+            var PureProfilerConfigurationSection = ConfigurationHelper.LoadPureProfilerConfigurationSection();
+            if (PureProfilerConfigurationSection.EnableAuth == true)
+            {
+                string cookieValue = "";
+                if (!string.IsNullOrEmpty(sessionStr))
+                {
+                    cookieValue = sessionStr;
+                }
+                else
+                {
+                    var cookie = GetAuthSession(context);
+                    cookieValue = cookie != null ? cookie.ToString() : "";
+                }
+
+                if (string.IsNullOrEmpty(cookieValue))
+                {
+                    context.Response.Redirect(LoginUrl, true);
+                    return false;
+                }
+                else
+                {
+                    string enAuth = PureProfilerConfigurationSection.EncryptAuthAccount;
+                    if (cookieValue == enAuth)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+            }
+            else
+            {
+                return true;
+            }
+
+
+        }
+
+        private void SetNoCacheHeader(HttpContext context)
+        {
+            context.Response.Headers.Add("Expires", "0");
+            context.Response.Headers.Add("Pragma", "no-cache");
+            context.Response.Headers.Add("Cache-control", "no-cache");
+            context.Response.Headers.Add("Cache", "no-cache");
         }
 
         public async Task Invoke(HttpContext context)
@@ -172,8 +234,12 @@ namespace Pure.Profiler.Web
             // view index of all latest results: ~/coreprofiler/view
             if (path.EndsWith(ViewStatWebUrl, StringComparison.OrdinalIgnoreCase)
                  )
-            { 
-
+            {
+                SetNoCacheHeader(context);
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
                 // render result list view
 
                 context.Response.ContentType = "text/html;charset=utf-8";
@@ -297,7 +363,11 @@ namespace Pure.Profiler.Web
             else if (path.EndsWith(ViewStatDbUrl, StringComparison.OrdinalIgnoreCase)
                 )
             {
-
+                SetNoCacheHeader(context);
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
                 // render result list view
 
                 context.Response.ContentType = "text/html;charset=utf-8";

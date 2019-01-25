@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.2</Version>
+    <Version>1.5.3</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Pure.Profiler.Web</Description>
     <PackageReleaseNotes>Pure.Profiler.Web</PackageReleaseNotes>
-    <FileVersion>1.5.2.0</FileVersion>
+    <FileVersion>1.5.3.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -20,6 +20,7 @@
   <ItemGroup>
     <None Remove="Handlers\icons.png" />
     <None Remove="Handlers\json.png" />
+    <None Remove="Handlers\login.html" />
     <None Remove="Handlers\pureprofiler.js" />
     <None Remove="Handlers\treeview_timeline.css" />
   </ItemGroup>
@@ -27,6 +28,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Handlers\icons.png" />
     <EmbeddedResource Include="Handlers\json.png" />
+    <EmbeddedResource Include="Handlers\login.html" />
     <EmbeddedResource Include="Handlers\pureprofiler.js" />
     <EmbeddedResource Include="Handlers\treeview_timeline.css" />
   </ItemGroup>
@@ -35,6 +37,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
   </ItemGroup>
 

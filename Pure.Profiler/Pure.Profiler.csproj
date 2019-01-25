@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.5.2</Version>
+    <Version>1.5.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -13,6 +13,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
+    
+
+    <!--<PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />-->
+    <!--<PackageReference Include="System.Data.Common" Version="4.3.0" />-->
+    <!--<PackageReference Include="System.Diagnostics.StackTrace" Version="4.3.0" />-->
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <!--<PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />-->
+    <!--<PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />-->
+    <!--<PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />-->
+    
+    
   </ItemGroup>
 
 </Project>

@@ -17,6 +17,9 @@ namespace Pure.Profiler.Web
         /// <returns></returns>
         public static IServiceCollection AddPureProfiler(this IServiceCollection services )
         {
+           
+            services.AddSession();
+           
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             return services;
         }
@@ -45,7 +48,7 @@ namespace Pure.Profiler.Web
             ProfilingSession.ProfilingFilters.Add(new NameContainsProfilingFilter("/pureprofiler-resources"));
 
             ServiceLocator.Current = builder.ApplicationServices;
-
+             
             return builder.UseMiddleware<PureProfilerMiddleware>();
         }
     }

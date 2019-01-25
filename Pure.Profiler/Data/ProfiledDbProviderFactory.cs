@@ -140,15 +140,19 @@ namespace Pure.Profiler.Data
             return _dbProviderFactory.CreateParameter();
         }
 
-        ///// <summary>
-        ///// Returns a new instance of the provider's class that implements the provider's version of the <see cref="CodeAccessPermission"/> class. 
-        ///// </summary>
-        ///// <param name="state"></param>
-        ///// <returns></returns>
-        //public override CodeAccessPermission CreatePermission(System.Security.Permissions.PermissionState state)
-        //{
-        //    return _dbProviderFactory.CreatePermission(state);
-        //}
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Returns a new instance of the provider's class that implements the provider's version of the <see cref="CodeAccessPermission"/> class. 
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public override CodeAccessPermission CreatePermission(System.Security.Permissions.PermissionState state)
+        {
+            return _dbProviderFactory.CreatePermission(state);
+        }
+#endif
+
 
         /// <summary>
         /// Specifies whether the specific <see cref="DbProviderFactory"/> supports the <see cref="DbDataSourceEnumerator"/> class. 

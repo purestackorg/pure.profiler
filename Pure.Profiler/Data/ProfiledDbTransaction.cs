@@ -9,27 +9,24 @@ namespace Pure.Profiler.Data
     /// </summary>
     internal class ProfiledDbTransaction : DbTransaction
     {
-        private readonly IDbTransaction _transaction;
-        private readonly DbTransaction _dbTransaction;
+        private  DbTransaction _transaction;
         private DbConnection _dbConnection;
 
         /// <summary>
         /// Gets the wrapped <see cref="DbTransaction"/>
-        /// </summary>
-        public DbTransaction WrappedTransaction { get { return _dbTransaction; } }
+        public DbTransaction WrappedTransaction { get { return _transaction; } }
 
         #region Constructors
 
         /// <summary>
         /// Initializes a <see cref="ProfiledDbTransaction"/>.
         /// </summary>
-        /// <param name="transaction">The <see cref="IDbTransaction"/> to be profiled.</param>
+        /// <param name="transaction">The <see cref="DbTransaction"/> to be profiled.</param>
         /// <param name="connection">The <see cref="DbConnection"/>.</param>
-        public ProfiledDbTransaction(IDbTransaction transaction, DbConnection connection)
+        public ProfiledDbTransaction(DbTransaction transaction, DbConnection connection)
         {
             _transaction = transaction;
-            _dbTransaction = _transaction as DbTransaction;
-            _dbConnection = connection ?? transaction.Connection as DbConnection;
+            _dbConnection = connection ?? transaction.Connection;
         }
 
         #endregion
@@ -74,11 +71,12 @@ namespace Pure.Profiler.Data
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _transaction != null)
             {
                 _transaction.Dispose();
             }
-
+            _transaction = null;
+            _dbConnection = null;
             base.Dispose(disposing);
         }
 

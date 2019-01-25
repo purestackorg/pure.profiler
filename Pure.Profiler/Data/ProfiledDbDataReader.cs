@@ -2,6 +2,9 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Pure.Profiler.Data
 {
@@ -13,9 +16,9 @@ namespace Pure.Profiler.Data
     public class ProfiledDbDataReader : DbDataReader
     {
         public string Id { get; private set; }
-        private readonly IDataReader _dataReader;
+        //private readonly IDataReader _dataReader;
         //private readonly DbDataReader _dataReader;
-        private readonly DbDataReader _dbDataReader;
+        private readonly DbDataReader _dataReader;
         private readonly IDbProfiler _dbProfiler;
 
         #region Constructors
@@ -23,9 +26,9 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbDataReader"/>.
         /// </summary>
-        /// <param name="dataReader">The <see cref="IDataReader"/> to be profiled.</param>
+        /// <param name="dataReader">The <see cref="DbDataReader"/> to be profiled.</param>
         /// <param name="dbProfiler">
-        ///     The <see cref="IDbProfiler"/> which profiles the <see cref="IDataReader"/>
+        ///     The <see cref="IDbProfiler"/> which profiles the <see cref="DbDataReader"/>
         /// </param>
         public ProfiledDbDataReader(IDataReader dataReader, IDbProfiler dbProfiler)
         {
@@ -40,8 +43,8 @@ namespace Pure.Profiler.Data
             }
             Id = Guid.NewGuid().ToString();
             //_dataReader = dataReader;
-            _dataReader = dataReader;
-            _dbDataReader = dataReader as DbDataReader ;
+           // _dataReader = dataReader;
+            _dataReader = dataReader as DbDataReader ;
               
             _dbProfiler = dbProfiler;
         }
@@ -56,7 +59,7 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return _dbDataReader.GetHashCode();
+            return _dataReader.GetHashCode();
         }
 
         /// <summary>
@@ -64,49 +67,27 @@ namespace Pure.Profiler.Data
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        //public override bool Equals(object obj)
-        //{
-        //    if (ReferenceEquals(obj, this))
-        //    {
-        //        return true;
-        //    }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
 
-        //    var profilingDataReader = obj as ProfiledDbDataReader;
-        //    if (profilingDataReader != null)
-        //    {
-        //        return ReferenceEquals(profilingDataReader._dataReader, _dataReader);
-        //    }
+            var profilingDataReader = obj as ProfiledDbDataReader;
+            if (!ReferenceEquals(profilingDataReader, null))
+            {
+                return ReferenceEquals(profilingDataReader._dataReader, _dataReader);
+            }
 
-        //    var dataReader = obj as IDataReader;
-        //    if (dataReader != null)
-        //    {
-        //        return ReferenceEquals(dataReader, _dataReader);
-        //    }
+            var dataReader = obj as DbDataReader;
+            if (dataReader != null)
+            {
+                return ReferenceEquals(dataReader, _dataReader);
+            }
 
-        //    return false;
-        //}
-
-        /// <summary>
-        /// Equals.
-        /// </summary>
-        /// <param name="a">a</param>
-        /// <param name="b">b</param>
-        /// <returns>Return true if equals.</returns>
-        //public static bool operator ==(ProfiledDbDataReader a, ProfiledDbDataReader b)
-        //{
-        //    if (ReferenceEquals(a, b))
-        //    {
-        //        return true;
-        //    }
-
-        //    if (ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null))
-        //    {
-        //        return false;
-        //    }
-
-        //    return a.Equals(b);
-        //}
+            return false;
+        }
 
         /// <summary>
         /// Equals.
@@ -114,16 +95,21 @@ namespace Pure.Profiler.Data
         /// <param name="a">a</param>
         /// <param name="b">b</param>
         /// <returns>Return true if equals.</returns>
-        //public static bool operator ==(ProfiledDbDataReader a, IDataReader b)
-        //{
-        //    if (ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null))
-        //    {
-        //        return false;
-        //    }
+        public static bool operator ==(ProfiledDbDataReader a, ProfiledDbDataReader b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
 
-        //    return a.Equals(b);
-        //}
+            if (ReferenceEquals(a, null)
+                || ReferenceEquals(b, null))
+            {
+                return false;
+            }
+
+            return a.Equals(b);
+        }
 
         /// <summary>
         /// Equals.
@@ -131,16 +117,33 @@ namespace Pure.Profiler.Data
         /// <param name="a">a</param>
         /// <param name="b">b</param>
         /// <returns>Return true if equals.</returns>
-        //public static bool operator ==(IDataReader a, ProfiledDbDataReader b)
-        //{
-        //    if (ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null))
-        //    {
-        //        return false;
-        //    }
+        public static bool operator ==(ProfiledDbDataReader a, DbDataReader b)
+        {
+            if (ReferenceEquals(a, null)
+                || ReferenceEquals(b, null))
+            {
+                return false;
+            }
 
-        //    return b.Equals(a);
-        //}
+            return a.Equals(b);
+        }
+
+        /// <summary>
+        /// Equals.
+        /// </summary>
+        /// <param name="a">a</param>
+        /// <param name="b">b</param>
+        /// <returns>Return true if equals.</returns>
+        public static bool operator ==(DbDataReader a, ProfiledDbDataReader b)
+        {
+            if (ReferenceEquals(a, null)
+                || ReferenceEquals(b, null))
+            {
+                return false;
+            }
+
+            return b.Equals(a);
+        }
 
         /// <summary>
         /// Not equals.
@@ -148,38 +151,21 @@ namespace Pure.Profiler.Data
         /// <param name="a">a</param>
         /// <param name="b">b</param>
         /// <returns>Return true if not equals.</returns>
-        //public static bool operator !=(ProfiledDbDataReader a, ProfiledDbDataReader b)
-        //{
-        //    if (ReferenceEquals(a, b))
-        //    {
-        //        return false;
-        //    }
+        public static bool operator !=(ProfiledDbDataReader a, ProfiledDbDataReader b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return false;
+            }
 
-        //    if ((ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null)))
-        //    {
-        //        return true;
-        //    }
+            if ((ReferenceEquals(a, null)
+                || ReferenceEquals(b, null)))
+            {
+                return true;
+            }
 
-        //    return !a.Equals(b);
-        //}
-
-        /// <summary>
-        /// Not equals.
-        /// </summary>
-        /// <param name="a">a</param>
-        /// <param name="b">b</param>
-        /// <returns>Return true if not equals.</returns>
-        //public static bool operator !=(ProfiledDbDataReader a, IDataReader b)
-        //{
-        //    if ((ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null)))
-        //    {
-        //        return true;
-        //    }
-
-        //    return !a.Equals(b);
-        //}
+            return !a.Equals(b);
+        }
 
         /// <summary>
         /// Not equals.
@@ -187,33 +173,39 @@ namespace Pure.Profiler.Data
         /// <param name="a">a</param>
         /// <param name="b">b</param>
         /// <returns>Return true if not equals.</returns>
-        //public static bool operator !=(IDataReader a, ProfiledDbDataReader b)
-        //{
-        //    if ((ReferenceEquals(a, null)
-        //        || ReferenceEquals(b, null)))
-        //    {
-        //        return true;
-        //    }
+        public static bool operator !=(ProfiledDbDataReader a, DbDataReader b)
+        {
+            if ((ReferenceEquals(a, null)
+                || ReferenceEquals(b, null)))
+            {
+                return true;
+            }
 
-        //    return !b.Equals(a);
-        //}
+            return !a.Equals(b);
+        }
+
+        /// <summary>
+        /// Not equals.
+        /// </summary>
+        /// <param name="a">a</param>
+        /// <param name="b">b</param>
+        /// <returns>Return true if not equals.</returns>
+        public static bool operator !=(DbDataReader a, ProfiledDbDataReader b)
+        {
+            if ((ReferenceEquals(a, null)
+                || ReferenceEquals(b, null)))
+            {
+                return true;
+            }
+
+            return !b.Equals(a);
+        }
 
         #endregion
 
         #region DbDataReader Members
 
-        /// <summary>
-        /// Closes the reader.
-        /// </summary>
-        public override void Close()
-        {
-            _dataReader.Close();
-
-            if (_dbProfiler != null)
-            {
-                _dbProfiler.DataReaderFinished(this);
-            }
-        }
+       
 
         /// <summary>
         /// Gets the depth.
@@ -335,12 +327,12 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override System.Collections.IEnumerator GetEnumerator()
         {
-            if (_dbDataReader != null)
+            if (_dataReader != null)
             {
-                return _dbDataReader.GetEnumerator();
+                return _dataReader.GetEnumerator();
             }
 
-            return new DbEnumerator(_dataReader, true);
+            return null;// new DbEnumerator(_dataReader, true);
         }
 
         /// <summary>
@@ -434,17 +426,17 @@ namespace Pure.Profiler.Data
 
         public override Type GetProviderSpecificFieldType(int ordinal)
         {
-            return _dbDataReader != null ? _dbDataReader.GetProviderSpecificFieldType(ordinal) : null;
+            return _dataReader != null ? _dataReader.GetProviderSpecificFieldType(ordinal) : null;
         }
 
         public override object GetProviderSpecificValue(int ordinal)
         {
-            return _dbDataReader != null ? _dbDataReader.GetProviderSpecificValue(ordinal) : 0;
+            return _dataReader != null ? _dataReader.GetProviderSpecificValue(ordinal) : 0;
         }
 
         public override int GetProviderSpecificValues(object[] values)
         {
-            return _dbDataReader != null ? _dbDataReader.GetProviderSpecificValues(values) : 0;
+            return _dataReader != null ? _dataReader.GetProviderSpecificValues(values) : 0;
         }
 
         /// <summary>
@@ -484,9 +476,9 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                if (_dbDataReader != null)
+                if (_dataReader != null)
                 {
-                    return _dbDataReader.HasRows;
+                    return _dataReader.HasRows;
                 }
 
                 return true;
@@ -548,7 +540,7 @@ namespace Pure.Profiler.Data
         }
         public override int VisibleFieldCount
         {
-            get { return _dbDataReader != null? _dbDataReader.VisibleFieldCount : 0; }
+            get { return _dataReader != null? _dataReader.VisibleFieldCount : 0; }
         }
 
         /// <summary>
@@ -571,11 +563,113 @@ namespace Pure.Profiler.Data
             get { return _dataReader[ordinal]; }
         }
 
+
+        /// <summary>
+        /// Gets field value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ordinal"></param>
+        /// <returns></returns>
+        public override T GetFieldValue<T>(int ordinal)
+        {
+            return _dataReader.GetFieldValue<T>(ordinal);
+        }
+
+        /// <summary>
+        /// Gets field value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ordinal"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+        {
+            return _dataReader.GetFieldValueAsync<T>(ordinal, cancellationToken);
+        }
+
+      
+
+        /// <summary>
+        /// Gets stream.
+        /// </summary>
+        /// <param name="ordinal"></param>
+        /// <returns></returns>
+        public override Stream GetStream(int ordinal)
+        {
+            return _dataReader.GetStream(ordinal);
+        }
+
+        /// <summary>
+        /// Gets text reader.
+        /// </summary>
+        /// <param name="ordinal"></param>
+        /// <returns></returns>
+        public override TextReader GetTextReader(int ordinal)
+        {
+            return _dataReader.GetTextReader(ordinal);
+        }
+
+        /// <summary>
+        /// Is DBNull.
+        /// </summary>
+        /// <param name="ordinal"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
+        {
+            return _dataReader.IsDBNullAsync(ordinal, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets next result.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            return _dataReader.NextResultAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Reads next row.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            return _dataReader.ReadAsync(cancellationToken);
+        }
+
+
+        //public override void Close()
+        //{
+        //    // reader can be null when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
+        //    // an unwrapped reader from the base command
+        //    if (_dataReader != null)
+        //        _dataReader.Close();
+
+        //    if (_dbProfiler != null)
+        //    {
+        //        _dbProfiler.DataReaderFinished(this);
+        //    }
+
+        //    base.Close();
+
+        //}
+        /// <summary>
+        /// Closes the reader.
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _dataReader.Dispose();
+
+                if (_dataReader != null)
+                    _dataReader.Close();
+
+                if (_dbProfiler != null)
+                {
+                    _dbProfiler.DataReaderFinished(this);
+                }
             }
 
             base.Dispose(disposing);

@@ -41,40 +41,46 @@ namespace Pure.Profiler.DbProfilingStorage
     /// <param name="session"></param>
     protected override void Save(ITimingSession session)
         {
-            //if (!Logger.Value.IsInfoEnabled)
-            //{
-            //    return;
-            //}
-
-            if (session == null)
+            try
             {
-                return;
-            }
+                //if (!Logger.Value.IsInfoEnabled)
+                //{
+                //    return;
+                //}
 
-            var v = FormatTimingSession(session);
-            //SaveSessionJson(session);
-
-            using (var db = new PureProfilingDbContext())
-            {
-
-                if (session.Timings == null) return;
-                long errorCount = 0;
-                foreach (var timing in session.Timings)
+                if (session == null)
                 {
-                    if (timing == null) continue;
-
-                    //SaveTimingJson(session, timing);
-                    var v2 = FormatTiming(session , timing);
-
-                    db.Insert<PureProfilingEntity>(v2, null);
-                    errorCount += v2.ErrorCount;
+                    return;
                 }
 
-                v.ErrorCount = errorCount;
+                var v = FormatTimingSession(session);
+                //SaveSessionJson(session);
 
-                db.Insert<PureProfilingEntity>(v, null);
+                using (var db = new PureProfilingDbContext())
+                {
 
+                    if (session.Timings == null) return;
+                    long errorCount = 0;
+                    foreach (var timing in session.Timings)
+                    {
+                        if (timing == null) continue;
+
+                        //SaveTimingJson(session, timing);
+                        var v2 = FormatTiming(session, timing);
+
+                        db.Insert<PureProfilingEntity>(v2, null);
+                        errorCount += v2.ErrorCount;
+                    }
+
+                    v.ErrorCount = errorCount;
+                    db.Insert<PureProfilingEntity>(v, null);
+                }
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("PureProfiler DatabaseProfilingStorage Save error:" + ex);
+            }
+            
 
 
         }

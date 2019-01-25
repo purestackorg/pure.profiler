@@ -2,6 +2,8 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Pure.Profiler.Data
 {
@@ -10,21 +12,18 @@ namespace Pure.Profiler.Data
     /// </summary>
     public class ProfiledDbConnection : DbConnection
     {
-        private readonly IDbConnection _connection;
-        private readonly DbConnection _dbConnection;
-        private readonly Func<IDbProfiler> _getDbProfiler;
+        //private readonly IDbConnection _connection;
+        private  DbConnection _connection;
+        private  Func<IDbProfiler> _getDbProfiler;
 
-        /// <summary>
-        /// Gets the wrapped <see cref="DbConnection"/>.
-        /// </summary>
-        public DbConnection WrappedConnection { get { return _dbConnection; } }
+        public DbConnection WrappedConnection { get { return _connection; } }
 
         #region Constructors
 
         /// <summary>
         /// Initializes a <see cref="ProfiledDbConnection"/>.
         /// </summary>
-        /// <param name="connection">The <see cref="IDbConnection"/> to be profiled.</param>
+        /// <param name="connection">The <see cref="DbConnection"/> to be profiled.</param>
         /// <param name="dbProfiler">The <see cref="IDbProfiler"/>.</param>
         public ProfiledDbConnection(IDbConnection connection, IDbProfiler dbProfiler)
             : this(connection, () => dbProfiler)
@@ -34,7 +33,7 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbConnection"/>.
         /// </summary>
-        /// <param name="connection">The <see cref="IDbConnection"/> to be profiled.</param>
+        /// <param name="connection">The <see cref="DbConnection"/> to be profiled.</param>
         /// <param name="getDbProfiler">Gets the <see cref="IDbProfiler"/>.</param>
         public ProfiledDbConnection(IDbConnection connection, Func<IDbProfiler> getDbProfiler)
         {
@@ -48,11 +47,17 @@ namespace Pure.Profiler.Data
                 throw new ArgumentNullException("getDbProfiler");
             }
 
-            _connection = connection;
-            _dbConnection = connection as DbConnection;
-            if (_dbConnection != null)
+            if (connection is ProfiledDbConnection)
+                throw new ArgumentException("connection to be profiled should not be a instance of ProfiledDbConnection!");
+            
+            _connection = connection as DbConnection;
+            if (_connection == null)
             {
-                _dbConnection.StateChange += StateChangeHandler;
+                throw new ArgumentNullException("connection is not DbConnection");
+            }
+            if (_connection != null)
+            {
+                _connection.StateChange += StateChangeHandler;
             }
             _getDbProfiler = getDbProfiler;
         }
@@ -124,9 +129,9 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                if (_dbConnection != null)
+                if (_connection != null)
                 {
-                    return _dbConnection.DataSource;
+                    return _connection.DataSource;
                 }
 
                 return null;
@@ -156,9 +161,9 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                if (_dbConnection != null)
+                if (_connection != null)
                 {
-                    return _dbConnection.ServerVersion;
+                    return _connection.ServerVersion;
                 }
 
                 return null;
@@ -203,9 +208,9 @@ namespace Pure.Profiler.Data
         {
             if (disposing)
             {
-                if (_dbConnection != null)
+                if (_connection != null)
                 {
-                    _dbConnection.StateChange -= StateChangeHandler;
+                    _connection.StateChange -= StateChangeHandler;
                 }
 
                 if (_connection.State != ConnectionState.Closed)
@@ -213,8 +218,20 @@ namespace Pure.Profiler.Data
                     _connection.Dispose();
                 }
             }
+            _connection = null;
+            _getDbProfiler = null;
 
             base.Dispose(disposing);
+        }
+		
+		 /// <summary>
+        /// Opens the connection.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task OpenAsync(CancellationToken cancellationToken)
+        {
+            return _connection.OpenAsync(cancellationToken);
         }
 
         /// <summary>
@@ -223,9 +240,9 @@ namespace Pure.Profiler.Data
         /// <param name="transaction"></param>
         public override void EnlistTransaction(System.Transactions.Transaction transaction)
         {
-            if (_dbConnection != null)
+            if (_connection != null)
             {
-                _dbConnection.EnlistTransaction(transaction);
+                _connection.EnlistTransaction(transaction);
             }
         }
 
@@ -235,9 +252,9 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override DataTable GetSchema()
         {
-            if (_dbConnection != null)
+            if (_connection != null)
             {
-                return _dbConnection.GetSchema();
+                return _connection.GetSchema();
             }
 
             return null;
@@ -250,9 +267,9 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override DataTable GetSchema(string collectionName)
         {
-            if (_dbConnection != null)
+            if (_connection != null)
             {
-                return _dbConnection.GetSchema(collectionName);
+                return _connection.GetSchema(collectionName);
             }
 
             return null;
@@ -266,9 +283,9 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override DataTable GetSchema(string collectionName, string[] restrictionValues)
         {
-            if (_dbConnection != null)
+            if (_connection != null)
             {
-                return _dbConnection.GetSchema(collectionName, restrictionValues);
+                return _connection.GetSchema(collectionName, restrictionValues);
             }
 
             return null;

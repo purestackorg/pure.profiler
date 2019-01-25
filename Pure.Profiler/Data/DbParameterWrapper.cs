@@ -7,15 +7,13 @@ namespace Pure.Profiler.Data
 {
     internal sealed class DbParameterWrapper : DbParameter
     {
-        private readonly IDbDataParameter _parameter;
-        private readonly DbParameter _dbParameter;
+        private readonly DbParameter _parameter;
 
         #region Constructors
 
-        public DbParameterWrapper(IDbDataParameter parameter)
+        public DbParameterWrapper(DbParameter parameter)
         {
             _parameter = parameter;
-            _dbParameter = parameter as DbParameter;
         }
 
         #endregion
@@ -54,9 +52,9 @@ namespace Pure.Profiler.Data
             }
             set
             {
-                if (_dbParameter != null)
+                if (_parameter != null)
                 {
-                    _dbParameter.IsNullable = value;
+                    _parameter.IsNullable = value;
                 }
             }
         }
@@ -75,9 +73,9 @@ namespace Pure.Profiler.Data
 
         public override void ResetDbType()
         {
-            if (_dbParameter != null)
+            if (_parameter != null)
             {
-                _dbParameter.ResetDbType();
+                _parameter.ResetDbType();
             }
         }
 
@@ -109,31 +107,19 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                if (_dbParameter != null)
+                if (_parameter != null)
                 {
-                    return _dbParameter.SourceColumnNullMapping;
+                    return _parameter.SourceColumnNullMapping;
                 }
 
                 return false;
             }
             set
             {
-                if (_dbParameter != null)
+                if (_parameter != null)
                 {
-                    _dbParameter.SourceColumnNullMapping = value;
+                    _parameter.SourceColumnNullMapping = value;
                 }
-            }
-        }
-
-        public override DataRowVersion SourceVersion
-        {
-            get
-            {
-                return _dbParameter.SourceVersion;
-            }
-            set
-            {
-                _dbParameter.SourceVersion = value;
             }
         }
 
@@ -141,11 +127,35 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                return _dbParameter.Value;
+                return _parameter.Value;
             }
             set
             {
-                _dbParameter.Value = value;
+                _parameter.Value = value;
+            }
+        }
+
+        public override byte Precision
+        {
+            get
+            {
+                return _parameter.Precision;
+            }
+            set
+            {
+                _parameter.Precision = value;
+            }
+        }
+
+        public override byte Scale
+        {
+            get
+            {
+                return _parameter.Scale;
+            }
+            set
+            {
+                _parameter.Scale = value;
             }
         }
 

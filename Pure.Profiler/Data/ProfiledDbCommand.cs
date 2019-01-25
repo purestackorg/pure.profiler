@@ -1,21 +1,25 @@
 
+using Pure.Profiler.Timings;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Pure.Profiler.Timings;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Pure.Profiler.Data
 {
     /// <summary>
-    /// A <see cref="IDbCommand"/> wrapper which supports DB profiling.
-    /// </summary>
-    public class ProfiledDbCommand : DbCommand, ICloneable, IDbCommand
+    /// A <see cref="DbCommand"/> wrapper which supports DB profiling.
+    /// </summary>  
+    public class ProfiledDbCommand : DbCommand, ICloneable
     {
-        private readonly IDbCommand _command;
-        private readonly DbCommand _dbCommand;
-        private readonly Func<IDbProfiler> _getDbProfiler;
-        private DbParameterCollection _dbParameterCollection;
+        public   DbCommand _command;
+        private  Func<IDbProfiler> _getDbProfiler;
+        private bool _bindByName;
+        private static Link<Type, Action<IDbCommand, bool>> bindByNameCache;
 
         #region Properties
 
@@ -31,10 +35,10 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbCommand"/>.
         /// </summary>
-        /// <param name="command">The <see cref="IDbCommand"/> to be profiled.</param>
+        /// <param name="command">The <see cref="DbCommand"/> to be profiled.</param>
         /// <param name="dbProfiler">The <see cref="IDbProfiler"/>.</param>
         /// <param name="tags">The tags of the <see cref="DbTiming"/> which will be created internally.</param>
-        public ProfiledDbCommand(IDbCommand command, IDbProfiler dbProfiler, IEnumerable<string> tags = null)
+        public ProfiledDbCommand(DbCommand command, IDbProfiler dbProfiler, IEnumerable<string> tags = null)
             : this(command, dbProfiler, tags == null ? null : new TagCollection(tags))
         {
         }
@@ -42,10 +46,10 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbCommand"/>.
         /// </summary>
-        /// <param name="command">The <see cref="IDbCommand"/> to be profiled.</param>
+        /// <param name="command">The <see cref="DbCommand"/> to be profiled.</param>
         /// <param name="dbProfiler">The <see cref="IDbProfiler"/>.</param>
         /// <param name="tags">The tags of the <see cref="DbTiming"/> which will be created internally.</param>
-        public ProfiledDbCommand(IDbCommand command, IDbProfiler dbProfiler, TagCollection tags)
+        public ProfiledDbCommand(DbCommand command, IDbProfiler dbProfiler, TagCollection tags)
             : this(command, () => dbProfiler, tags)
         {
         }
@@ -53,10 +57,10 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbCommand"/>.
         /// </summary>
-        /// <param name="command">The <see cref="IDbCommand"/> to be profiled.</param>
+        /// <param name="command">The <see cref="DbCommand"/> to be profiled.</param>
         /// <param name="getDbProfiler">Gets the <see cref="IDbProfiler"/>.</param>
-        /// <param name="tags">The tags of the <see cref="DbTiming"/> which will be created internally.</param>
-        public ProfiledDbCommand(IDbCommand command, Func<IDbProfiler> getDbProfiler, IEnumerable<string> tags = null)
+        /// <param name="tags">The tags of the <see cref="DbTiming"/> which will be created internally.</param>        
+        public ProfiledDbCommand(DbCommand command, Func<IDbProfiler> getDbProfiler, IEnumerable<string> tags = null)
             : this(command, getDbProfiler, tags == null ? null : new TagCollection(tags))
         {
         }
@@ -64,10 +68,10 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Initializes a <see cref="ProfiledDbCommand"/>.
         /// </summary>
-        /// <param name="command">The <see cref="IDbCommand"/> to be profiled.</param>
+        /// <param name="command">The <see cref="DbCommand"/> to be profiled.</param>
         /// <param name="getDbProfiler">Gets the <see cref="IDbProfiler"/>.</param>
         /// <param name="tags">The tags of the <see cref="DbTiming"/> which will be created internally.</param>
-        public ProfiledDbCommand(IDbCommand command, Func<IDbProfiler> getDbProfiler, TagCollection tags)
+        public ProfiledDbCommand(DbCommand command, Func<IDbProfiler> getDbProfiler, TagCollection tags)
         {
             if (command == null)
             {
@@ -80,7 +84,6 @@ namespace Pure.Profiler.Data
             }
 
             _command = command;
-            _dbCommand = command as DbCommand;
             _getDbProfiler = getDbProfiler;
 
             Tags = tags;
@@ -149,33 +152,13 @@ namespace Pure.Profiler.Data
         /// <returns>Returns the created <see cref="DbParameter"/>.</returns>
         protected override DbParameter CreateDbParameter()
         {
-            if (_dbCommand != null)
-            {
-                return _dbCommand.CreateParameter();
-            }
-
-            return new DbParameterWrapper(_command.CreateParameter());
+            return _command.CreateParameter();
         }
 
         /// <summary>
         /// Gets or sets the <see cref="DbConnection"/> used by this DbCommand. 
         /// </summary>
         protected override DbConnection DbConnection
-        {
-            get
-            {
-                return _dbCommand.Connection;
-            }
-            set
-            {
-                if (value is ProfiledDbConnection)
-                    _dbCommand.Connection = (value as ProfiledDbConnection).WrappedConnection;
-                else
-                    _dbCommand.Connection = value;
-            }
-        }
-
-        IDbConnection IDbCommand.Connection
         {
             get
             {
@@ -197,24 +180,7 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                if (_command.Parameters == null && (_dbCommand == null || _dbCommand.Parameters == null))
-                {
-                    return null;
-                }
-
-                if (_dbParameterCollection == null)
-                {
-                    if (_dbCommand != null)
-                    {
-                        _dbParameterCollection = _dbCommand.Parameters;
-                    }
-                    else if (_command.Parameters != null)
-                    {
-                        _dbParameterCollection = new DbParameterCollectionWrapper(_command.Parameters);
-                    }
-                }
-
-                return _dbParameterCollection;
+                return _command.Parameters;
             }
         }
 
@@ -222,21 +188,6 @@ namespace Pure.Profiler.Data
         /// Gets or sets the <see cref="DbTransaction"/> within which this <see cref="DbCommand"/> object executes. 
         /// </summary>
         protected override DbTransaction DbTransaction
-        {
-            get
-            {
-                return _dbCommand.Transaction;
-            }
-            set
-            {
-                if (value is ProfiledDbTransaction)
-                    _dbCommand.Transaction = (value as ProfiledDbTransaction).WrappedTransaction;
-                else
-                    _dbCommand.Transaction = value;
-            }
-        }
-
-        IDbTransaction IDbCommand.Transaction
         {
             get
             {
@@ -256,22 +207,73 @@ namespace Pure.Profiler.Data
         /// </summary>
         public override bool DesignTimeVisible
         {
-            get
-            {
-                if (_dbCommand != null)
-                {
-                    return _dbCommand.DesignTimeVisible;
-                }
+            get { return _command.DesignTimeVisible; }
+            set { _command.DesignTimeVisible = value; }
+        }
 
-                return false;
-            }
+        /// <summary>
+        /// Gets the internal command.
+        /// </summary>
+        public DbCommand InternalCommand => _command;
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to bind by name.
+        /// If the underlying command supports BindByName, this sets/clears the underlying
+        /// implementation accordingly. This is required to support OracleCommand from Dapper
+        /// </summary>
+        public bool BindByName
+        {
+            get => _bindByName;
             set
             {
-                if (_dbCommand != null)
+                if (_bindByName != value)
                 {
-                    _dbCommand.DesignTimeVisible = value;
+                    if (_command != null)
+                    {
+                        GetBindByName(_command.GetType())?.Invoke(_command, value);
+                    }
+
+                    _bindByName = value;
                 }
             }
+        }
+        /// <summary>
+        /// Get the binding name.
+        /// </summary>
+        /// <param name="commandType">The command type.</param>
+        /// <returns>The <see cref="Action"/>.</returns>
+        private static Action<IDbCommand, bool> GetBindByName(Type commandType)
+        {
+            if (commandType == null) return null; // GIGO
+            if (Link<Type, Action<IDbCommand, bool>>.TryGet(bindByNameCache, commandType, out var action))
+            {
+                return action;
+            }
+
+            var prop = commandType
+#if NETSTANDARD1_5
+                .GetTypeInfo()
+#endif
+                .GetProperty("BindByName", BindingFlags.Public | BindingFlags.Instance);
+            action = null;
+            ParameterInfo[] indexers;
+            MethodInfo setter;
+            if (prop?.CanWrite == true && prop.PropertyType == typeof(bool)
+                && ((indexers = prop.GetIndexParameters()) == null || indexers.Length == 0)
+                && (setter = prop.GetSetMethod()) != null)
+            {
+                var method = new DynamicMethod(commandType.Name + "_BindByName", null, new[] { typeof(IDbCommand), typeof(bool) });
+                var il = method.GetILGenerator();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Castclass, commandType);
+                il.Emit(OpCodes.Ldarg_1);
+                il.EmitCall(OpCodes.Callvirt, setter, null);
+                il.Emit(OpCodes.Ret);
+                action = (Action<IDbCommand, bool>)method.CreateDelegate(typeof(Action<IDbCommand, bool>));
+            }
+
+            // cache it            
+            Link<Type, Action<IDbCommand, bool>>.TryAdd(ref bindByNameCache, commandType, ref action);
+            return action;
         }
 
         /// <summary>
@@ -282,70 +284,21 @@ namespace Pure.Profiler.Data
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
             var dbProfiler = _getDbProfiler();
-            if (dbProfiler == null) return _dbCommand.ExecuteReader();
-
-            try
-            {
-
-
-                IDataReader reader = null;
-                reader = dbProfiler.ExecuteDbCommand(
-                    DbExecuteType.Reader
-                    , _command
-                    , () => {
-                        reader = _dbCommand.ExecuteReader(behavior);
-
-                        return reader;
-                    }
-                    , Tags);
-
-                var profiledReader = reader as ProfiledDbDataReader;
-                if (profiledReader != null)
-                {
-                    return profiledReader;
-                }
-
-                return new ProfiledDbDataReader(reader, dbProfiler);
-            }
-            catch (Exception ex)
-            {
-                if (Tags == null)
-                {
-                    Tags = new TagCollection();
-
-                }
-                Tags.Add(ProfilingSession.FailOnErrorMark);
-                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Reader, _command, 0) { Tags = Tags };
-                // if not executing reader, stop the sql timing right after execute()
-                dbTiming.Stop();
-
-                throw ex;
-            }
-
-        }
-
-        IDataReader IDbCommand.ExecuteReader()
-        {
-            return _command.ExecuteReader(CommandBehavior.Default);
-        }
-
-        IDataReader IDbCommand.ExecuteReader(CommandBehavior behavior)
-        {
-            var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return _command.ExecuteReader();
 
             try
             {
+               
 
-                IDataReader reader = null;
-                reader = dbProfiler.ExecuteDbCommand(
+                DbDataReader reader = null;
+                dbProfiler.ExecuteDbCommand(
                     DbExecuteType.Reader
                     , _command
                     , () => {
-                        reader = _dbCommand.ExecuteReader(behavior);
+                        reader = _command.ExecuteReader(behavior);
 
                         return reader;
-                    }
+                    } 
                     , Tags);
 
                 var profiledReader = reader as ProfiledDbDataReader;
@@ -372,6 +325,56 @@ namespace Pure.Profiler.Data
             }
 
         }
+
+      
+        //IDataReader IDbCommand.ExecuteReader()
+        //{
+        //    return _command.ExecuteReader(CommandBehavior.Default);
+        //}
+
+        //IDataReader IDbCommand.ExecuteReader(CommandBehavior behavior)
+        //{
+        //    var dbProfiler = _getDbProfiler();
+        //    if (dbProfiler == null) return _command.ExecuteReader();
+
+        //    try
+        //    {
+
+        //        IDataReader reader = null;
+        //        reader = dbProfiler.ExecuteDbCommand(
+        //            DbExecuteType.Reader
+        //            , _command
+        //            , () => {
+        //                reader = _dbCommand.ExecuteReader(behavior);
+
+        //                return reader;
+        //            }
+        //            , Tags);
+
+        //        var profiledReader = reader as ProfiledDbDataReader;
+        //        if (profiledReader != null)
+        //        {
+        //            return profiledReader;
+        //        }
+
+        //        return new ProfiledDbDataReader(reader, dbProfiler);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (Tags == null)
+        //        {
+        //            Tags = new TagCollection();
+
+        //        }
+        //        Tags.Add(ProfilingSession.FailOnErrorMark);
+        //        DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Reader, _command, 0) { Tags = Tags };
+        //        // if not executing reader, stop the sql timing right after execute()
+        //        dbTiming.Stop();
+
+        //        throw ex;
+        //    }
+
+        //}
 
         /// <summary>
         /// Executes a SQL statement against a connection object. 
@@ -403,7 +406,7 @@ namespace Pure.Profiler.Data
 
                 throw ex;
             }
-        
+
         }
 
         /// <summary>
@@ -436,7 +439,7 @@ namespace Pure.Profiler.Data
 
                 throw ex;
             }
-           
+
         }
 
         /// <summary>
@@ -448,7 +451,7 @@ namespace Pure.Profiler.Data
         }
 
         /// <summary>
-        /// Gets or sets how command results are applied to the <see cref="DataRow"/> when used by the Update method of a <see cref="DbDataAdapter"/>. 
+        /// Gets or sets how command results are applied to a row.
         /// </summary>
         public override UpdateRowSource UpdatedRowSource
         {
@@ -465,13 +468,13 @@ namespace Pure.Profiler.Data
         /// <summary>
         /// Gets whether or not can raise events.
         /// </summary>
-        protected override bool CanRaiseEvents
-        {
-            get
-            {
-                return true;
-            }
-        }
+        //protected override bool CanRaiseEvents
+        //{
+        //    get
+        //    {
+        //        return true;
+        //    }
+        //}
 
         /// <summary>
         /// Releases the unmanaged resources used by the <see cref="ProfiledDbCommand"/> and optionally releases the managed resources. 
@@ -481,14 +484,94 @@ namespace Pure.Profiler.Data
         {
             if (disposing)
             {
-                if (_dbCommand == null)
+                if (_command != null)
                     _command.Dispose();
-                else
-                    _dbCommand.Dispose();
             }
-
+           
+            _command = null; 
             base.Dispose(disposing);
         }
+
+        protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        {
+            var dbProfiler = _getDbProfiler();
+            if (dbProfiler == null) return await _command.ExecuteReaderAsync(behavior, cancellationToken);
+
+            try
+            {
+
+
+
+                DbDataReader reader = null;
+                var result = await dbProfiler.ExecuteDbCommandAsync(
+                    DbExecuteType.Reader
+                    , _command
+                    , async () => {
+                        reader = await _command.ExecuteReaderAsync(behavior, cancellationToken);
+                        return reader;
+                    }
+                    , Tags);
+                ¡¡
+                
+
+                var profiledReader = reader as ProfiledDbDataReader;
+                if (profiledReader != null)
+                {
+                    return profiledReader;
+                }
+
+                return new ProfiledDbDataReader(reader, dbProfiler);
+ ¡¡
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Reader, _command, 0) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw ex;
+            }
+
+        
+
+
+        }
+
+
+        /// <summary>
+        /// Executes NonQuery.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        {
+            var dbProfiler = _getDbProfiler();
+            if (dbProfiler == null) return (int)(await _command.ExecuteNonQueryAsync(cancellationToken));
+
+            return (int)await dbProfiler.ExecuteDbCommandAsync(
+                DbExecuteType.NonQuery, _command, async () => { return await _command.ExecuteNonQueryAsync(cancellationToken); }, Tags);
+        }
+
+        /// <summary>
+        /// Executes Scalar.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        {
+            var dbProfiler = _getDbProfiler();
+            if (dbProfiler == null) return await _command.ExecuteScalarAsync(cancellationToken);
+
+            return await dbProfiler.ExecuteDbCommandAsync(
+                DbExecuteType.Scalar, _command, async () => { return await _command.ExecuteScalarAsync(cancellationToken); }, Tags);
+        }
+
 
         /// <summary>
         /// Clone
@@ -496,8 +579,8 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public object Clone()
         {
-            var cmdCloneable = _dbCommand as ICloneable;
-            var cmdClone = cmdCloneable == null ? _dbCommand : cmdCloneable.Clone() as DbCommand;
+            var cmdCloneable = _command as ICloneable;
+            var cmdClone = cmdCloneable == null ? _command : cmdCloneable.Clone() as DbCommand;
 
             return new ProfiledDbCommand(cmdClone, _getDbProfiler, Tags) { Connection = cmdClone.Connection };
         }

@@ -135,5 +135,61 @@ namespace Pure.Profiler.Configuration
             get { return (bool)_EnableProfiler; }
             set { _EnableProfiler = value; }
         }
+
+
+        private string _RootBaseUrl = "";
+
+        public string RootBaseUrl
+        {
+            get { return (string)_RootBaseUrl; }
+            set { _RootBaseUrl = value; }
+        }
+
+
+
+
+        private bool _EnableAuth = true;
+
+        public bool EnableAuth
+        {
+            get { return (bool)_EnableAuth; }
+            set { _EnableAuth = value; }
+        }
+        private string _AuthAccount = "";
+
+        public string AuthAccount
+        {
+            get { return (string)_AuthAccount; }
+            set { _AuthAccount = value; }
+        }
+
+        private string _EncryptAuthAccount = "";
+
+        public string EncryptAuthAccount
+        {
+            get {
+                if (_EncryptAuthAccount == "")
+                {
+                    _EncryptAuthAccount= PureProfilerEncryptHelper.EncryptByAES(AuthAccount, PureProfilerEncryptHelper.AES_KEY);
+                }
+                return _EncryptAuthAccount;
+
+            }
+
+        }
+        public string Encrypt(string key)
+        { 
+
+                return PureProfilerEncryptHelper.EncryptByAES(key, PureProfilerEncryptHelper.AES_KEY);
+             
+
+        }
+        private string _AuthPassword = "";
+
+        public string AuthPassword
+        {
+            get { return (string)_AuthPassword; }
+            set { _AuthPassword = value; }
+        }
     }
 }

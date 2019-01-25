@@ -23,16 +23,20 @@ namespace Pure.Profiler.Web
 
         public const string XCorrelationId = "X-ET-Correlation-Id";
 
-
         private const string ViewUrl = "/pureprofiler/view";
         private const string ViewUrlClear = "/pureprofiler/view/clear";
         private const string ViewUrlInclude = "/pureprofiler/view/include";
-       private const string ExportUrl = "/pureprofiler/export";
+        private const string ExportUrl = "/pureprofiler/export";
+        private const string LoginUrl = ConfigurationHelper.LoginUrl;//"/pureprofiler/login";
+        private const string LoginCheckUrl = "/pureprofiler/check";
 
         private const string Import = "import";
         private const string ExportJson = "json";
         private const string ExportType = "exporttype";
         private const string QueryString = "QUERY_STRING";
+
+        private const string Auth_CookieName = ConfigurationHelper.AuthCookieName;
+
 
         //private const string Import = "import";
         //private const string Export = "?export";
@@ -69,16 +73,76 @@ namespace Pure.Profiler.Web
 
         }
 
+        private void SetAuthSession(HttpContext context, string sessionStr)
+        {
+            context.Session.SetString(Auth_CookieName, sessionStr);
+        }
+
+        private string GetAuthSession(HttpContext context)
+        {
+            return context.Session.GetString(Auth_CookieName);
+        }
+        private bool Authorize(HttpContext context, string sessionStr = "")
+        {
+            var PureProfilerConfigurationSection = ConfigurationHelper.LoadPureProfilerConfigurationSection();
+            if (PureProfilerConfigurationSection.EnableAuth == true)
+            {
+                string cookieValue = "";
+                if (!string.IsNullOrEmpty(sessionStr))
+                {
+                    cookieValue = sessionStr;
+                }
+                else
+                {
+                    var cookie = GetAuthSession(context);
+                    cookieValue = cookie != null ? cookie.ToString() : "";
+                }
+
+                if (string.IsNullOrEmpty(cookieValue))
+                {
+                    context.Response.Redirect(LoginUrl, true);
+                    return false;
+                }
+                else
+                {
+                    string enAuth = PureProfilerConfigurationSection.EncryptAuthAccount;
+                    if (cookieValue == enAuth)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+            }
+            else
+            {
+                return true;
+            }
+
+
+        }
+
+        private void SetNoCacheHeader(HttpContext context)
+        {
+            context.Response.Headers.Add("Expires", "0");
+            context.Response.Headers.Add("Pragma", "no-cache");
+            context.Response.Headers.Add("Cache-control", "no-cache");
+            context.Response.Headers.Add("Cache", "no-cache");
+        }
+
         public async Task Invoke(HttpContext context)
         {
-             
+
             if (context == null)
             {
                 await _next.Invoke(context);
 
                 return;
             }
-                  
+
             if (ProfilingSession.Disabled || ConfigurationHelper.LoadPureProfilerConfigurationSection().EnableProfiler == false)
             {
                 await _next.Invoke(context);
@@ -97,6 +161,7 @@ namespace Pure.Profiler.Web
 
             var url = UriHelper.GetDisplayUrl(context.Request);
             ProfilingSession.Start(url);
+            var PureProfilerConfigurationSection = ConfigurationHelper.LoadPureProfilerConfigurationSection();
 
             // set correlationId if exists in header
             var correlationId = GetCorrelationIdFromHeaders(context);
@@ -139,7 +204,7 @@ namespace Pure.Profiler.Web
             // prepend pathbase if specified
             baseViewPath = context.Request.PathBase + baseViewPath;
 
-           
+
             if (path.EndsWith("/pureprofiler-resources/icons"))
             {
                 context.Response.ContentType = "image/png";
@@ -150,7 +215,7 @@ namespace Pure.Profiler.Web
                     await context.Response.Body.WriteAsync(br.ReadBytes((int)iconsStream.Length), 0, (int)iconsStream.Length);
                 }
                 return;
-                 
+
             }
             if (path.EndsWith("/pureprofiler-resources/images/json"))
             {
@@ -186,6 +251,47 @@ namespace Pure.Profiler.Web
                 return;
             }
 
+            if (PureProfilerConfigurationSection.EnableAuth == true)
+            {
+
+                //login url 
+                if (path.EndsWith(LoginUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetNoCacheHeader(context);
+                    context.Response.ContentType = "text/html;charset=utf-8";
+                    var cssStream = GetType().Assembly.GetManifestResourceStream("Pure.Profiler.Web.Handlers.login.html");
+                    using (var sr = new StreamReader(cssStream))
+                    {
+                        await context.Response.WriteAsync(sr.ReadToEnd());
+                    }
+                    return;
+                }
+                //logincheck url 
+                if (path.EndsWith(LoginCheckUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetNoCacheHeader(context);
+
+                    if (context.Request.Method == HttpMethods.Post && context.Request.HasFormContentType == true)
+                    {
+                        string account = context.Request.Form["account"].ToString();
+                        string password = context.Request.Form["password"].ToString();
+                        if (account == PureProfilerConfigurationSection.AuthAccount && password == PureProfilerConfigurationSection.AuthPassword)
+                        {
+                            string sessionStr = PureProfilerConfigurationSection.Encrypt(account);
+                            SetAuthSession(context, sessionStr);
+                            context.Response.Redirect(ViewUrl + "?" + Auth_CookieName + "=" + sessionStr, true);
+                            return;
+                        }
+
+                    }
+                    context.Response.ContentType = "text/html;charset=utf-8";
+
+                    await context.Response.WriteAsync("Account or Password validate failed!");
+                    return;
+                }
+            }
+
+
             //clear  ~/pureprofiler/view/clear
             if (path.EndsWith(ViewUrlClear, StringComparison.OrdinalIgnoreCase))
             {
@@ -194,13 +300,21 @@ namespace Pure.Profiler.Web
                 return;
             }
 
-           
+
 
 
             // view index of all latest results: ~/coreprofiler/view
             if (path.EndsWith(ViewUrl, StringComparison.OrdinalIgnoreCase)
                  )
             {
+                SetNoCacheHeader(context);
+
+                string sessionStr = context.Request.Query[Auth_CookieName].ToString();
+
+                if (Authorize(context, sessionStr) == false)
+                {
+                    return;
+                }
                 // try to handle import/export first
                 //var import = context.Request.Query[Import];
                 //if (Uri.IsWellFormedUriString(import, UriKind.Absolute))
@@ -246,10 +360,15 @@ namespace Pure.Profiler.Web
                 sb.Append("<body class='pureprofiler-pagebody' style=\"background:#EAF2FF;z-index:99999;\">");
                 sb.Append(ViewResultIndexHeaderHtml);
                 sb.Append("<a target='_self' href='" + ViewUrl + "'>Refresh</a>");
+
                 sb.Append("&nbsp; <a target='_blank' href='export?exporttype=json'>Json</a>");
-                sb.Append("&nbsp; <a target='_self' href='view/clear'>Clear</a>");
+                sb.Append("&nbsp; <a target='_self' href='" + ViewUrlClear + "'>Clear</a>");
                 sb.Append("&nbsp; <a target='_blank' href='stat-web'>WebStat</a>");
                 sb.Append("&nbsp; <a target='_blank' href='stat-db'>DbStat</a>");
+                //sb.Append("&nbsp; <a target='_blank' href='export?exporttype=json'>Json</a>");
+                //sb.Append("&nbsp; <a target='_self' href='view/clear'>Clear</a>");
+                //sb.Append("&nbsp; <a target='_blank' href='stat-web'>WebStat</a>");
+                //sb.Append("&nbsp; <a target='_blank' href='stat-db'>DbStat</a>");
                 sb.Append("&nbsp; <a target='_self' href=\"#\" onclick=\"return clickGlobal();\">Global</a>");
 
                 //tab
@@ -298,7 +417,7 @@ namespace Pure.Profiler.Web
                     sb.Append("<tr");
                     if ((i++) % 2 == 1)
                     {
-                        sb.Append(" class=\"gray "+ errorClass + "\"");
+                        sb.Append(" class=\"gray " + errorClass + "\"");
                     }
                     else
                     {
@@ -323,7 +442,7 @@ namespace Pure.Profiler.Web
                     }
                     sb.Append(IsAjaxString);
                     sb.Append("</td><td class=\"nowrap\">");
-                    
+
                     sb.Append(statusCode);
                     sb.Append("</td><td><a href=\"view/");
                     sb.Append(result.Id.ToString());
@@ -403,6 +522,12 @@ namespace Pure.Profiler.Web
             // view index of all latest results: ~/pureprofiler/view/include
             if (path.EndsWith(ViewUrlInclude, StringComparison.OrdinalIgnoreCase))
             {
+                SetNoCacheHeader(context);
+
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
 
                 context.Response.ContentType = "text/javascript;charset=utf-8";
                 //var curr = ProfilingSession.Current.Profiler.GetTimingSession();
@@ -442,7 +567,7 @@ namespace Pure.Profiler.Web
                 var autoshow = context.Request.Query["autoshow"] == "1";
                 if (autoshow == false)
                 {
-                    var pureprofiler_autoshow = context.Request.Cookies["pureprofiler_autoshow"] != null ? context.Request.Cookies["pureprofiler_autoshow"]  == "1" : false;
+                    var pureprofiler_autoshow = context.Request.Cookies["pureprofiler_autoshow"] != null ? context.Request.Cookies["pureprofiler_autoshow"] == "1" : false;
                     if (pureprofiler_autoshow)
                     {
                         autoshow = pureprofiler_autoshow;
@@ -452,7 +577,7 @@ namespace Pure.Profiler.Web
                 string autoshowStrig = autoshow ? "" : ".pureprofiler{display:none;} ";
 
                 var rooturl = context.Request.Query["rooturl"];
-                string roolurlString = !string.IsNullOrEmpty(rooturl) ? rooturl.ToString().TrimEnd('/') : "";
+                string roolurlString = !string.IsNullOrEmpty(rooturl) ? rooturl.ToString().TrimEnd('/') : PureProfilerConfigurationSection.RootBaseUrl;
 
                 sb.Append("<script type=\"text/javascript\" src=\"./pureprofiler-resources/js\"></script>");
 
@@ -489,15 +614,22 @@ namespace Pure.Profiler.Web
 
 
                 await context.Response.WriteAsync(html);
-               
+
                 return;
             }
 
 
 
             // view specific result by uuid: ~/pureprofiler/view/{uuid}
-            if (path.IndexOf(ViewUrl, StringComparison.OrdinalIgnoreCase) >= 0 )
+            if (path.IndexOf(ViewUrl, StringComparison.OrdinalIgnoreCase) >= 0)
             {
+                SetNoCacheHeader(context);
+
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
+
                 context.Response.ContentType = "text/html;charset=utf-8";
 
                 var sb = new StringBuilder();
@@ -507,7 +639,12 @@ namespace Pure.Profiler.Web
                 sb.Append("<title>性能检测报告</title>");
                 sb.Append("<link rel=\"stylesheet\" href=\"./pureprofiler-resources/css\" />");
                 sb.Append("<script type=\"text/javascript\" src=\"./pureprofiler-resources/js\"></script>");
-                sb.Append("</head");
+                sb.Append("<script>hljs.initHighlightingOnLoad();</script>");
+
+   //             < link rel = "stylesheet" href = "/path/to/styles/default.css" >
+   //< script src = "/path/to/highlight.pack.js" ></ script >
+   // < script > hljs.initHighlightingOnLoad();</ script >
+                       sb.Append("</head");
                 sb.Append("<body>");
                 sb.Append("<h1>性能检测报告</h1>");
 
@@ -666,11 +803,15 @@ namespace Pure.Profiler.Web
                         sb.Append("<aside id=\"data_");
                         sb.Append(timing.Id.ToString());
                         sb.Append("\" style=\"display:none\" class=\"modal\">");
-                        sb.Append("<div>");
+                        sb.Append("<div style='width:90%; word -break: break-all;word - wrap: break-word;'>");
                         sb.Append("<h4><code>");
-                        sb.Append(timing.Name.Replace("\r\n", " "));
+                        sb.Append( "Execute Info");
+                        //sb.Append(timing.Name.Replace("\r\n", " "));
                         sb.Append("</code></h4>");
-                        sb.Append("<textarea readonly=\"readonly\">");
+
+                        //<pre><code class="html">...</code></pre>
+                        //sb.Append("<textarea readonly=\"readonly\">");
+                        sb.Append("<pre><code class=\"html\">");
                         foreach (var keyValue in timing.Data)
                         {
                             if (string.IsNullOrWhiteSpace(keyValue.Value)) continue;
@@ -718,7 +859,9 @@ namespace Pure.Profiler.Web
                             sb.Append(timing.Tags);
                             sb.Append("\r\n");
                         }
-                        sb.Append("</textarea>");
+                        //sb.Append("</textarea>");
+                        sb.Append("</code></pre>"); 
+
                         sb.Append(
                             "<a href=\"#close\" title=\"Close\" onclick=\"this.parentNode.parentNode.style.display='none'\">关闭</a>");
                         sb.Append("</div>");
@@ -738,8 +881,14 @@ namespace Pure.Profiler.Web
 
 
             //导出数据
-            if (path.IndexOf(ExportUrl, StringComparison.OrdinalIgnoreCase) >= 0  )
+            if (path.IndexOf(ExportUrl, StringComparison.OrdinalIgnoreCase) >= 0)
             {
+                SetNoCacheHeader(context);
+
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
                 var import = context.Request.Query[Import];
                 if (Uri.IsWellFormedUriString(import, UriKind.Absolute))
                 {
@@ -747,7 +896,7 @@ namespace Pure.Profiler.Web
                     return;
                 }
 
-                if (context.Request.Query[ExportType] == (ExportJson)  )
+                if (context.Request.Query[ExportType] == (ExportJson))
                 {
                     context.Response.ContentType = "application/json;charset=utf-8";
                     await context.Response.WriteAsync(ImportSerializer.SerializeSessions(ProfilingSession.CircularBuffer));
@@ -769,13 +918,18 @@ namespace Pure.Profiler.Web
                             return;
                         }
 
-                     
+
                     }
                 }
 
             }
             else if (TryToImportDrillDownResult && path.IndexOf(ExportUrl, StringComparison.OrdinalIgnoreCase) >= 0)
             {
+
+                if (Authorize(context) == false)
+                {
+                    return;
+                }
                 var uuid = path.Split('/').Last();
                 var result = ProfilingSession.CircularBuffer.FirstOrDefault(
                         r => r.Id.ToString().ToLowerInvariant() == uuid.ToLowerInvariant());
@@ -835,22 +989,22 @@ namespace Pure.Profiler.Web
 
                     // stop and save profiling results on error
                     string err = "";
-                 
-                        Exception objErr = ex ;
-                        err = "Error at:      " + context.Request.GetDisplayUrl()  + newLine +
-                        "Error Message:      " + objErr.Message.ToString() + newLine +
-                        "Error Source:      " + objErr.Source.ToString() + newLine +
-                        "Stack Trace:      " + objErr.StackTrace.ToString() + newLine;
 
-                        if (objErr.InnerException != null)
-                        {
-                            err += "InnerException:      " + newLine +
-                        "InnerError Message:      " + objErr.Message.ToString() + newLine +
-                        "InnerError Source:      " + objErr.Source.ToString() + newLine +
-                        "InnerStack Trace:      " + objErr.StackTrace.ToString() + newLine;
-                        }
+                    Exception objErr = ex;
+                    err = "Error at:      " + context.Request.GetDisplayUrl() + newLine +
+                    "Error Message:      " + objErr.Message.ToString() + newLine +
+                    "Error Source:      " + objErr.Source.ToString() + newLine +
+                    "Stack Trace:      " + objErr.StackTrace.ToString() + newLine;
 
-                   
+                    if (objErr.InnerException != null)
+                    {
+                        err += "InnerException:      " + newLine +
+                    "InnerError Message:      " + objErr.Message.ToString() + newLine +
+                    "InnerError Source:      " + objErr.Source.ToString() + newLine +
+                    "InnerStack Trace:      " + objErr.StackTrace.ToString() + newLine;
+                    }
+
+
                     using (ProfilingSession.Current.Step(() => (err), ProfilingSession.FailOnErrorMark))
                     {
 
@@ -1051,7 +1205,7 @@ namespace Pure.Profiler.Web
 
             using (var httpClient = new HttpClient())
             {
-                
+
                 var response = await httpClient.GetAsync(importUrl);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -1089,7 +1243,7 @@ namespace Pure.Profiler.Web
             var total = latestResults.FirstOrDefault().DurationMilliseconds;
             //var total = latestResults.Sum(p => p.DurationMilliseconds);
             return total.ToString();
-            
+
         }
 
     }

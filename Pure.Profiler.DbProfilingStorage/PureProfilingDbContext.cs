@@ -24,25 +24,25 @@ namespace Pure.Profiler.DbProfilingStorage
             : base(  "PureProfilingDbContext.xml", DbLogger.LogStatic, config =>
             {
 
-                if (config.EnableDebug == true)
-                {
-                    config.DbConnectionInit = (conn) =>
-                    {
+                //if (config.EnableDebug == true)
+                //{
+                //    config.DbConnectionInit = (conn) =>
+                //    {
 
-                        if (ProfilingSession.Current == null)
-                        {
-                            return conn;
-                        }
-                        if (conn != null && conn.State != System.Data.ConnectionState.Open)
-                        {
-                            var dbProfiler = new Pure.Profiler.Data.DbProfiler(Pure.Profiler.ProfilingSession.Current.Profiler);
+                //        if (ProfilingSession.Current == null)
+                //        {
+                //            return conn;
+                //        }
+                //        if (conn != null && conn.State != System.Data.ConnectionState.Open)
+                //        {
+                //            var dbProfiler = new Pure.Profiler.Data.DbProfiler(Pure.Profiler.ProfilingSession.Current.Profiler);
 
-                            conn = new Pure.Profiler.Data.ProfiledDbConnection(conn, dbProfiler);
-                        }
+                //            conn = new Pure.Profiler.Data.ProfiledDbConnection(conn, dbProfiler);
+                //        }
 
-                        return conn;
-                    };
-                }
+                //        return conn;
+                //    };
+                //}
 
             })
         {
