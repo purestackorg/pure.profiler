@@ -415,14 +415,6 @@ namespace Pure.Profiler.Data
             return _dataReader.GetOrdinal(name);
         }
 
-        /// <summary>
-        /// Gets schema table.
-        /// </summary>
-        /// <returns></returns>
-        public override DataTable GetSchemaTable()
-        {
-            return _dataReader.GetSchemaTable();
-        }
 
         public override Type GetProviderSpecificFieldType(int ordinal)
         {
@@ -641,23 +633,37 @@ namespace Pure.Profiler.Data
         }
 
 
-        //public override void Close()
-        //{
-        //    // reader can be null when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
-        //    // an unwrapped reader from the base command
-        //    if (_dataReader != null)
-        //        _dataReader.Close();
 
-        //    if (_dbProfiler != null)
-        //    {
-        //        _dbProfiler.DataReaderFinished(this);
-        //    }
+#if !NETSTANDARD1_5
 
-        //    base.Close();
+        public override void Close()
+        {
+            // reader can be null when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
+            // an unwrapped reader from the base command
+            if (_dataReader != null)
+                _dataReader.Close();
 
-        //}
+            if (_dbProfiler != null)
+            {
+                _dbProfiler.DataReaderFinished(this);
+            }
+
+            base.Close();
+
+        }
+
         /// <summary>
-        /// Closes the reader.
+        /// Gets schema table.
+        /// </summary>
+        /// <returns></returns>
+        public override DataTable GetSchemaTable()
+        {
+            return _dataReader.GetSchemaTable();
+        }
+#endif
+
+        /// <summary>Disposes the IDataReader Object.</summary>
+        /// <param name="disposing">Whether to clear any managed resources.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -666,14 +672,24 @@ namespace Pure.Profiler.Data
                 if (_dataReader != null)
                     _dataReader.Close();
 
+                //if (_dbProfiler != null)
+                //{
+                //    _dbProfiler.DataReaderFinished(this);
+                //}
+            }
+
+#if NETSTANDARD1_5
+            // Close isn't available in NETSTANDARD1_5, but Dispose *is*.
+            // Dispose should call close anyway, so we aren't calling ReaderFinish for other frameworks
+          
                 if (_dbProfiler != null)
                 {
                     _dbProfiler.DataReaderFinished(this);
                 }
-            }
-
+#endif
             base.Dispose(disposing);
         }
+ 
         #endregion
     }
 }

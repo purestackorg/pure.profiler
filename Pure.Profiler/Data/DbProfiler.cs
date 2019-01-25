@@ -14,8 +14,8 @@ namespace Pure.Profiler.Data
     public class DbProfiler : IDbProfiler
     {
         private readonly IProfiler _profiler;
-        private readonly ConcurrentDictionary<string, DbTiming> _inProgressDataReaders;
-        //private readonly ConcurrentDictionary<IDataReader, DbTiming> _inProgressDataReaders;
+        //private readonly ConcurrentDictionary<string, DbTiming> _inProgressDataReaders;
+        private readonly ConcurrentDictionary<IDataReader, DbTiming> _inProgressDataReaders;
 
         #region Constructors
 
@@ -31,8 +31,8 @@ namespace Pure.Profiler.Data
             }
 
             _profiler = profiler;
-            _inProgressDataReaders = new ConcurrentDictionary<string, DbTiming>();
-            //_inProgressDataReaders = new ConcurrentDictionary<IDataReader, DbTiming>();
+            //_inProgressDataReaders = new ConcurrentDictionary<string, DbTiming>();
+            _inProgressDataReaders = new ConcurrentDictionary<IDataReader, DbTiming>();
         }
 
         #endregion
@@ -102,8 +102,8 @@ namespace Pure.Profiler.Data
             var reader = dataReader as ProfiledDbDataReader ??
                 new ProfiledDbDataReader(dataReader, this);
             //var reader = new ProfiledDbDataReader(dataReader, this);
-            //_inProgressDataReaders[reader] = dbTiming;
-            _inProgressDataReaders[reader.Id] = dbTiming;
+            _inProgressDataReaders[reader] = dbTiming;
+            //_inProgressDataReaders[reader.Id] = dbTiming;
 
             return reader;
         }
@@ -127,7 +127,12 @@ namespace Pure.Profiler.Data
                 rowCount = pdReader.RowCount;
 
                 DbTiming dbTiming;
-                if (_inProgressDataReaders.TryRemove(pdReader.Id, out dbTiming))
+                //if (_inProgressDataReaders.TryRemove(pdReader.Id, out dbTiming))
+                //{
+                //    dbTiming.Data["executeResult"] = rowCount.ToString();
+                //    dbTiming.Stop();
+                //}
+                if (_inProgressDataReaders.TryRemove(pdReader, out dbTiming))
                 {
                     dbTiming.Data["executeResult"] = rowCount.ToString();
                     dbTiming.Stop();
@@ -206,8 +211,8 @@ namespace Pure.Profiler.Data
             var reader = dataReader as ProfiledDbDataReader ??
                 new ProfiledDbDataReader(dataReader, this);
             //var reader = new ProfiledDbDataReader(dataReader, this);
-            //_inProgressDataReaders[reader] = dbTiming;
-            _inProgressDataReaders[reader.Id] = dbTiming;
+            _inProgressDataReaders[reader] = dbTiming;
+            //_inProgressDataReaders[reader.Id] = dbTiming;
 
             return reader;
 
