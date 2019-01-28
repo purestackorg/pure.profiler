@@ -39,7 +39,7 @@ namespace Pure.Profiler.Configuration
          /// </summary> 
         public string DbType
         {
-            get { return dbType; }
+            get { return dbType.ToLower(); }
             set { dbType = value; }
         }
 

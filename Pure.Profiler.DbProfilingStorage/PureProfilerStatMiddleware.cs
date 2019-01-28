@@ -278,7 +278,8 @@ namespace Pure.Profiler.Web
                 {
                     int i = 0;
                     int index = 1; string sqlStr = "", sqlStrTmp = "";
-                    foreach (DataRow myRow in DtStatWebData.Rows)
+                    //foreach (DataRow myRow in DtStatWebData.Rows)
+                    foreach (var myRow in DtStatWebData)
                     {
                         sb.Append("<tr");
                         if ((i++) % 2 == 1)
@@ -292,11 +293,13 @@ namespace Pure.Profiler.Web
                         sb.Append("><td class=\"nowrap\" style='text-align:center'>");
                         sb.Append(index.ToString());
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "HttpVerb"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "HttpVerb"));
+                        sb.Append(myRow.HttpVerb);
                         sb.Append("</td><td class=\"\" style='word-wrap:break-word;word-break:break-all;max-width:600px;table-layout:fixed;padding-right: 20px;' >");
 
  
-                        sqlStr = StatSqlCollections.GetDataRowValue(myRow, "URI");
+                        //sqlStr = StatSqlCollections.GetDataRowValue(myRow, "URI");
+                        sqlStr = myRow.URI;
                         //if (sqlStr != null)
                         //{
                         //    sqlStr = sqlStr.ToLower();
@@ -307,36 +310,52 @@ namespace Pure.Profiler.Web
                         //}
                         //else
                         //{
-                            sqlStrTmp = sqlStr;
+                        sqlStrTmp = sqlStr;
                         //}
 
                         sb.Append("<a title='" + sqlStr + "' href='javascript:void(0)'>" + sqlStrTmp + "</a>");
 
                         //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "URI"));
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "RequestCount"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "RequestCount"));
+                        sb.Append(myRow.RequestCount);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDurationMilliseconds"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDurationMilliseconds"));
+                        sb.Append(myRow.SumDurationMilliseconds);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "AvgDurationMilliseconds"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "AvgDurationMilliseconds"));
+                        sb.Append(myRow.AvgDurationMilliseconds);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "MaxDurationMilliseconds"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "MaxDurationMilliseconds"));
+                        sb.Append(myRow.MaxDurationMilliseconds);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDbCount"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDbCount"));
+                        sb.Append(myRow.SumDbCount);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDbDurationMilliseconds"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDbDurationMilliseconds"));
+                        sb.Append(myRow.SumDbDurationMilliseconds);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ErrorCount"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ErrorCount"));
+                        sb.Append(myRow.ErrorCount);
 
                         sb.Append("</td><td class=\"nowrap\">");
-                        string qujian = "[" + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds1")
-                            +"," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds2")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds3")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds4")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds5")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds6")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds7")
-                            + "]";
+                        string qujian = "[" + myRow.DurationMilliseconds1
+                         + "," + myRow.DurationMilliseconds2
+                         + "," + myRow.DurationMilliseconds3
+                         + "," + myRow.DurationMilliseconds4
+                         + "," + myRow.DurationMilliseconds5
+                         + "," + myRow.DurationMilliseconds6
+                         + "," + myRow.DurationMilliseconds7
+                         + "]";
+
+                        //string qujian = "[" + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds1")
+                        //    +"," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds2")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds3")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds4")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds5")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds6")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds7")
+                        //    + "]";
                         sb.Append(qujian);
 
                         sb.Append("</td></tr>");
@@ -407,8 +426,9 @@ namespace Pure.Profiler.Web
                     int i = 0;
                     int index = 1;
                     string sqlStr = "", sqlStrTmp = "" ;
-                    foreach (DataRow myRow in DtStatWebData.Rows)
-                    {
+                    //foreach (DataRow myRow in DtStatWebData.Rows)
+                    foreach (var myRow in DtStatWebData)
+                        {
                         sb.Append("<tr");
                         if ((i++) % 2 == 1)
                         {
@@ -422,7 +442,9 @@ namespace Pure.Profiler.Web
                         sb.Append(index.ToString());
                         sb.Append("</td><td class=\"\" style='word-wrap:break-word;word-break:break-all;max-width:600px;table-layout:fixed;padding-right: 20px;' >");
 
-                        sqlStr = StatSqlCollections.GetDataRowValue(myRow, "SQLStr");
+                        //sqlStr = StatSqlCollections.GetDataRowValue(myRow, "SQLStr");
+                        sqlStr = myRow.SQLStr;
+
                         if (sqlStr != null)
                         {
                             sqlStr = sqlStr.ToLower();
@@ -440,29 +462,45 @@ namespace Pure.Profiler.Web
 
                         //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SQLStr"));
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ExecuteType"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ExecuteType"));
+                        sb.Append(myRow.ExecuteType);
                         sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "RequestCount"));
-                        sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDurationMilliseconds"));
-                        sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "AvgDurationMilliseconds"));
-                        sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "MaxDurationMilliseconds"));
-                        sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDExecuteResult"));
-                        sb.Append("</td><td class=\"nowrap\">");
-                        sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ErrorCount"));
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "RequestCount"));
+                        sb.Append(myRow.RequestCount);
 
                         sb.Append("</td><td class=\"nowrap\">");
-                        string qujian = "[" + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds1")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds2")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds3")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds4")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds5")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds6")
-                            + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds7")
-                            + "]";
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDurationMilliseconds"));
+                        sb.Append(myRow.SumDurationMilliseconds);
+                        sb.Append("</td><td class=\"nowrap\">");
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "AvgDurationMilliseconds"));
+                        sb.Append(myRow.AvgDurationMilliseconds);
+                        sb.Append("</td><td class=\"nowrap\">");
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "MaxDurationMilliseconds"));
+                        sb.Append(myRow.MaxDurationMilliseconds);
+                        sb.Append("</td><td class=\"nowrap\">");
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "SumDExecuteResult"));
+                        sb.Append(myRow.SumDExecuteResult);
+                        sb.Append("</td><td class=\"nowrap\">");
+                        //sb.Append(StatSqlCollections.GetDataRowValue(myRow, "ErrorCount"));
+                        sb.Append(myRow.ErrorCount);
+
+                        sb.Append("</td><td class=\"nowrap\">");
+                        //string qujian = "[" + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds1")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds2")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds3")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds4")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds5")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds6")
+                        //    + "," + StatSqlCollections.GetDataRowValue(myRow, "DurationMilliseconds7")
+                        //    + "]";
+                        string qujian = "[" + myRow.DurationMilliseconds1
+                           + "," + myRow.DurationMilliseconds2
+                           + "," + myRow.DurationMilliseconds3
+                           + "," + myRow.DurationMilliseconds4
+                           + "," + myRow.DurationMilliseconds5
+                           + "," + myRow.DurationMilliseconds6
+                           + "," + myRow.DurationMilliseconds7
+                           + "]";
                         sb.Append(qujian);
 
                         sb.Append("</td></tr>");
