@@ -26,7 +26,7 @@ namespace Pure.Profiler.DbProfilingStorage
             string str = @"select
 HttpVerb as HttpVerb,
 Name as URI, Count(NAME)  as RequestCount,Sum(DurationMilliseconds) as SumDurationMilliseconds, 
-Avg(DurationMilliseconds) as AvgDurationMilliseconds,  
+round(Avg(DurationMilliseconds),2) as AvgDurationMilliseconds,  
 Max(DurationMilliseconds) as MaxDurationMilliseconds,
 Sum(ErrorCount) as ErrorCount, 
 Sum(DbCount) as SumDbCount, 
@@ -41,8 +41,30 @@ count(case when DurationMilliseconds>100000 then SEQ end) as DurationMillisecond
  from sys_pureprofiling  
 where Type ='session' group by NAME, HttpVerb order by  RequestCount desc";
 
-            
 
+            var config = ConfigurationHelper.LoadPureProfilerConfigurationSection();
+            if (config.DbType == "oracle")
+            {
+                str = @"select
+HttpVerb as HttpVerb,
+Name as URI, Count(NAME)  as RequestCount,Sum(DurationMilliseconds) as SumDurationMilliseconds, 
+ROUND(Avg(DurationMilliseconds),2) as AvgDurationMilliseconds,  
+Max(DurationMilliseconds) as MaxDurationMilliseconds,
+Sum(ErrorCount) as ErrorCount, 
+Sum(DbCount) as SumDbCount, 
+Sum(DbDuration) as SumDbDurationMilliseconds,
+count(case when DurationMilliseconds >=0 and DurationMilliseconds <=1 then SEQ end) as DurationMilliseconds1,
+count(case when DurationMilliseconds>1 and DurationMilliseconds <=10 then SEQ end) as DurationMilliseconds2,
+count(case when DurationMilliseconds>10 and DurationMilliseconds <=100 then SEQ end) as DurationMilliseconds3,
+count(case when DurationMilliseconds>100 and DurationMilliseconds <=1000 then SEQ end) as DurationMilliseconds4,
+count(case when DurationMilliseconds>1000 and DurationMilliseconds <=10000 then SEQ end) as DurationMilliseconds5,
+count(case when DurationMilliseconds>10000 and DurationMilliseconds <=100000 then SEQ end) as DurationMilliseconds6,
+count(case when DurationMilliseconds>100000 then SEQ end) as DurationMilliseconds7
+ from sys_pureprofiling  
+where Type ='session' group by NAME, HttpVerb order by  RequestCount desc";
+
+                
+            }
 
 
             using (var db = new PureProfilingDbContext())
@@ -63,7 +85,7 @@ where Type ='session' group by NAME, HttpVerb order by  RequestCount desc";
 
             string str = @"select
 Name as SQLStr, Count(NAME) as RequestCount,Sum(DurationMilliseconds) as SumDurationMilliseconds, 
-Avg(DurationMilliseconds) as AvgDurationMilliseconds, 
+round(Avg(DurationMilliseconds),2) as AvgDurationMilliseconds, 
 Max(DurationMilliseconds) as MaxDurationMilliseconds,
 ExecuteType as ExecuteType, 
 Sum(ErrorCount) as ErrorCount, 
