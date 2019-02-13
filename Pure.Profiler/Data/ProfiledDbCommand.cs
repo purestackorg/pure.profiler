@@ -1,4 +1,5 @@
 
+using Pure.Profiler.Configuration;
 using Pure.Profiler.Timings;
 using System;
 using System.Collections.Generic;
@@ -321,7 +322,7 @@ namespace Pure.Profiler.Data
                 // if not executing reader, stop the sql timing right after execute()
                 dbTiming.Stop();
 
-                throw ex;
+               throw new PureProfilerException("ProfiledDbCommand", ex);;
             }
 
         }
@@ -371,7 +372,7 @@ namespace Pure.Profiler.Data
         //        // if not executing reader, stop the sql timing right after execute()
         //        dbTiming.Stop();
 
-        //        throw ex;
+        //       throw new PureProfilerException("ProfiledDbCommand", ex);;
         //    }
 
         //}
@@ -404,7 +405,7 @@ namespace Pure.Profiler.Data
                 // if not executing reader, stop the sql timing right after execute()
                 dbTiming.Stop();
 
-                throw ex;
+               throw new PureProfilerException("ProfiledDbCommand", ex);;
             }
 
         }
@@ -437,7 +438,7 @@ namespace Pure.Profiler.Data
                 // if not executing reader, stop the sql timing right after execute()
                 dbTiming.Stop();
 
-                throw ex;
+               throw new PureProfilerException("ProfiledDbCommand", ex);;
             }
 
         }
@@ -535,7 +536,7 @@ namespace Pure.Profiler.Data
                 // if not executing reader, stop the sql timing right after execute()
                 dbTiming.Stop();
 
-                throw ex;
+               throw new PureProfilerException("ProfiledDbCommand", ex);;
             }
 
         
@@ -551,11 +552,40 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
+
+
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return (int)(await _command.ExecuteNonQueryAsync(cancellationToken));
 
-            return (int)await dbProfiler.ExecuteDbCommandAsync(
-                DbExecuteType.NonQuery, _command, async () => { return await _command.ExecuteNonQueryAsync(cancellationToken); }, Tags);
+            try
+            {
+                int affected = 0;
+              
+                await dbProfiler.ExecuteDbCommandAsync(
+               DbExecuteType.NonQuery, _command, async () => { affected = await _command.ExecuteNonQueryAsync(cancellationToken); return affected; }, Tags);
+
+                return affected;
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.NonQuery, _command, 0) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw new PureProfilerException("ProfiledDbCommand", ex);
+            }
+
+            //var dbProfiler = _getDbProfiler();
+            //if (dbProfiler == null) return (int)(await _command.ExecuteNonQueryAsync(cancellationToken));
+
+            //return (int)await dbProfiler.ExecuteDbCommandAsync(
+            //    DbExecuteType.NonQuery, _command, async () => { return await _command.ExecuteNonQueryAsync(cancellationToken); }, Tags);
         }
 
         /// <summary>
@@ -565,11 +595,39 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
+
             var dbProfiler = _getDbProfiler();
             if (dbProfiler == null) return await _command.ExecuteScalarAsync(cancellationToken);
 
-            return await dbProfiler.ExecuteDbCommandAsync(
-                DbExecuteType.Scalar, _command, async () => { return await _command.ExecuteScalarAsync(cancellationToken); }, Tags);
+            try
+            {
+                object returnValue = null;
+                  await dbProfiler.ExecuteDbCommandAsync(
+              DbExecuteType.Scalar, _command, async () => { returnValue = await _command.ExecuteScalarAsync(cancellationToken); return returnValue; }, Tags);
+                 
+                return returnValue;
+            }
+            catch (Exception ex)
+            {
+                if (Tags == null)
+                {
+                    Tags = new TagCollection();
+
+                }
+                Tags.Add(ProfilingSession.FailOnErrorMark);
+                DbTiming dbTiming = new DbTiming(ProfilingSession.Current.Profiler, DbExecuteType.Scalar, _command, null) { Tags = Tags };
+                // if not executing reader, stop the sql timing right after execute()
+                dbTiming.Stop();
+
+                throw new PureProfilerException("ProfiledDbCommand", ex);
+            }
+
+
+            //var dbProfiler = _getDbProfiler();
+            //if (dbProfiler == null) return await _command.ExecuteScalarAsync(cancellationToken);
+
+            //return await dbProfiler.ExecuteDbCommandAsync(
+            //    DbExecuteType.Scalar, _command, async () => { return await _command.ExecuteScalarAsync(cancellationToken); }, Tags);
         }
 
 

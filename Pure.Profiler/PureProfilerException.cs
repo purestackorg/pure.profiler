@@ -13,5 +13,7 @@ namespace Pure.Profiler.Configuration
         {
 
         }
+
+      
     }
 }
