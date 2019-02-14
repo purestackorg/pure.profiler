@@ -7,14 +7,16 @@ namespace Pure.Profiler.DbProfilingStorage
 {
     public class DbLogger
     {
-        static string logPrifix = "profilings";
+        static string logPrifix = "profilings-";
+        static string customDirectory = PathHelper.CombineWithBaseDirectory("logs");
         public static void LogStatic(string msg, Exception ex = null, Pure.Data.MessageType type = Pure.Data.MessageType.Debug)
         {
             if (ex != null)
             {
                 msg += " -----> Error : "+ex;
             }
-            FastLogger.WriteText(logPrifix, msg);
+   
+            FastLogger.WriteLog(customDirectory, logPrifix, msg);
         }
     }
 

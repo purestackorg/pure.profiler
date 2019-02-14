@@ -64,6 +64,60 @@ function clickResponseBody() {
     return false;
 }
 
+function autoRefresh() {
+    var btnRefresh = document.getElementById("btnRefresh");
+    if (btnRefresh) {
+        btnRefresh.click();
+    }
+}
+var autoRefreshProfilingEvent = null;
+var cookieNameAutoRefreshProfiling = "cookieNameAutoRefreshProfiling";
+//自动刷新
+function onChangeSelIntervalVal() {
+
+    var myselect = document.getElementById("selInterval");
+    if (myselect) {
+        var index = myselect.selectedIndex;
+        if (index < 0) {
+            index = 0;
+        }
+        var selval = myselect.options[index].value;
+        var ival = parseInt(selval);
+        if (ival > 0) {
+            if (autoRefreshProfilingEvent !== null) {
+                window.clearInterval(autoRefreshProfilingEvent); 
+            }
+            var cookieValue = getCookie(cookieNameAutoRefreshProfiling);
+            if (cookieValue !== "" && cookieValue !== null) {
+                delCookie(cookieNameAutoRefreshProfiling);
+            }
+            //重复执行某个方法 
+            autoRefreshProfilingEvent = window.setInterval(autoRefresh, (ival * 1000)); 
+
+            setCookie(cookieNameAutoRefreshProfiling, ival, 7);
+        }
+        else {
+            delCookie(cookieNameAutoRefreshProfiling);
+        }
+    }
+    return ;
+    //myselect.options[index].text;
+     
+}
+
+window.onload = function () {
+
+    var selInterval = document.getElementById("selInterval");
+    if (selInterval) {
+        var cookieValue = getCookie(cookieNameAutoRefreshProfiling);
+        if (cookieValue !== "" && cookieValue !== null) {
+            document.all.selInterval.value = cookieValue; 
+            onChangeSelIntervalVal();
+        }
+     
+    }
+}
+
 //写cookies
 function setCookie(c_name, value, expiredays) {
     var exdate = new Date();

@@ -5,6 +5,9 @@
   "provider": null,
   "dbType": "MySql",
   "showError": null,
+  "enableAuth": false,
+  "authAccount": "pureprofiler",
+  "authPassword": "123456",
   "storage": "Pure.Profiler.DbProfilingStorage.DatabaseProfilingStorage,Pure.Profiler.DbProfilingStorage",
   "filters": [
     {

@@ -12,10 +12,10 @@
     EnableLobConverter="false"
     LobConverterClassName="Pure.Data.Test.MyLobParameterConverter,Pure.Data.Test"
     
-    EnableDebug="true"
+    EnableDebug="false"
     EnableIntercept="true"
-    EnableLogError="true"
-    EnableInternalLog="true"
+    EnableLogError="false"
+    EnableInternalLog="false"
     EnableOrmLog="false"
     LogWithRawSql="false"
     CategoryLogType="false"

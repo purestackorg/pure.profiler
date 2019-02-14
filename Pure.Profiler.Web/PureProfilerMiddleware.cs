@@ -80,7 +80,15 @@ namespace Pure.Profiler.Web
 
         private string GetAuthSession(HttpContext context)
         {
-            return context.Session.GetString(Auth_CookieName);
+            try
+            {
+                return context.Session.GetString(Auth_CookieName);
+
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
         private bool Authorize(HttpContext context, string sessionStr = "")
         {
@@ -359,7 +367,7 @@ namespace Pure.Profiler.Web
                 sb.Append("</head");
                 sb.Append("<body class='pureprofiler-pagebody' style=\"background:#EAF2FF;z-index:99999;\">");
                 sb.Append(ViewResultIndexHeaderHtml);
-                sb.Append("<a target='_self' href='" + ViewUrl + "'>Refresh</a>");
+                sb.Append("<a target='_self' id='btnRefresh' href='" + ViewUrl + "'>Refresh</a>");
 
                 sb.Append("&nbsp; <a target='_blank' href='export?exporttype=json'>Json</a>");
                 sb.Append("&nbsp; <a target='_self' href='" + ViewUrlClear + "'>Clear</a>");
@@ -370,6 +378,7 @@ namespace Pure.Profiler.Web
                 //sb.Append("&nbsp; <a target='_blank' href='stat-web'>WebStat</a>");
                 //sb.Append("&nbsp; <a target='_blank' href='stat-db'>DbStat</a>");
                 sb.Append("&nbsp; <a target='_self' href=\"#\" onclick=\"return clickGlobal();\">Global</a>");
+                sb.Append("&nbsp; <select id='selInterval'  onchange='onChangeSelIntervalVal();'><option value='0'>手动刷新</option><option value='1'>间隔1秒</option><option value='2'>间隔2秒</option><option value='3'>间隔3秒</option><option value='5'>间隔5秒</option><option value='60'>间隔60秒</option><option value='300'>间隔300秒</option></select>");
 
                 //tab
                 sb.Append("<p>");
