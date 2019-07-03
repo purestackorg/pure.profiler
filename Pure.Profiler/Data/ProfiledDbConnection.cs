@@ -19,6 +19,11 @@ namespace Pure.Profiler.Data
         public DbConnection WrappedConnection { get { return _connection; } }
 
         #region Constructors
+        public ProfiledDbConnection(IDbConnection connection )
+           : this(connection, () => new Pure.Profiler.Data.DbProfiler(Pure.Profiler.ProfilingSession.Current.Profiler))
+        {
+        }
+
 
         /// <summary>
         /// Initializes a <see cref="ProfiledDbConnection"/>.
@@ -60,6 +65,10 @@ namespace Pure.Profiler.Data
                 _connection.StateChange += StateChangeHandler;
             }
             _getDbProfiler = getDbProfiler;
+        }
+
+        public void SetDbProfiler(IDbProfiler dbProfiler) {
+            _getDbProfiler = () => dbProfiler;
         }
 
         #endregion
