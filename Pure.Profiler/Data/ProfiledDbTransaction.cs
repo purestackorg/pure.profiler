@@ -71,12 +71,17 @@ namespace Pure.Profiler.Data
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+           
             if (disposing && _transaction != null)
             {
                 _transaction.Dispose();
             }
             _transaction = null;
-            _dbConnection = null;
+            if (Configuration.ConfigurationHelper.LoadPureProfilerConfigurationSection().EnableDbPool == false)
+            {
+
+                _dbConnection = null;
+            }
             base.Dispose(disposing);
         }
 

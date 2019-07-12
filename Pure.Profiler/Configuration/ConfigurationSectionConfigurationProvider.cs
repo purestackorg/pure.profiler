@@ -89,6 +89,13 @@ namespace Pure.Profiler.Configuration
                         configsection.EnableProxy = Convert.ToBoolean(enableProxy);
 
                     }
+
+                    var enableDbPool = config["enableDbPool"];
+                    if (!string.IsNullOrEmpty(enableDbPool))
+                    {
+                        configsection.EnableDbPool = Convert.ToBoolean(enableDbPool);
+
+                    }
                     var proxyBaseUrl = config["proxyBaseUrl"];
                     if (!string.IsNullOrEmpty(proxyBaseUrl))
                     {

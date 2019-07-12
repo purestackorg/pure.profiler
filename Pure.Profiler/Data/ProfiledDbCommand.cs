@@ -483,6 +483,7 @@ namespace Pure.Profiler.Data
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+
             if (disposing)
             {
                 if (_command != null)

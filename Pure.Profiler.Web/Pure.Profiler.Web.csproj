@@ -40,6 +40,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pure.Profiler\Pure.Profiler.csproj" />
   </ItemGroup>
 
 </Project>

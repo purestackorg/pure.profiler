@@ -82,8 +82,13 @@ namespace Pure.Profiler.Data
         /// <returns>An object representing the new transaction.</returns>
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            var transaction = _connection.BeginTransaction(isolationLevel);
-            return new ProfiledDbTransaction(transaction, this);
+            if (_connection != null)
+            {
+
+                var transaction = _connection.BeginTransaction(isolationLevel);
+                return new ProfiledDbTransaction(transaction, this);
+            }
+            return null;
         }
 
         /// <summary>
@@ -92,7 +97,11 @@ namespace Pure.Profiler.Data
         /// <param name="databaseName">Specifies the name of the database for the connection to use.</param>
         public override void ChangeDatabase(string databaseName)
         {
-            _connection.ChangeDatabase(databaseName);
+            if (_connection != null)
+            {
+                _connection.ChangeDatabase(databaseName);
+
+            }
         }
 
         /// <summary>
@@ -100,7 +109,11 @@ namespace Pure.Profiler.Data
         /// </summary>
         public override void Close()
         {
-            _connection.Close();
+            if (_connection != null)
+            {
+                _connection.Close();
+
+            }
         }
 
         /// <summary>
@@ -152,7 +165,13 @@ namespace Pure.Profiler.Data
         /// </summary>
         public override string Database
         {
-            get { return _connection.Database; }
+            get {
+                if (_connection != null)
+                {
+                   return _connection.Database;
+
+                }
+                return ""; }
         }
 
         /// <summary>
@@ -160,7 +179,11 @@ namespace Pure.Profiler.Data
         /// </summary>
         public override void Open()
         {
-            _connection.Open();
+            if (_connection != null)
+            {
+                _connection.Open();
+            }
+           
         }
 
         /// <summary>
@@ -184,7 +207,13 @@ namespace Pure.Profiler.Data
         /// </summary>
         public override ConnectionState State
         {
-            get { return _connection.State; }
+            get {
+                if (_connection != null)
+                {
+                    return _connection.State;
+                }
+                return ConnectionState.Closed;
+                 }
         }
 
         /// <summary>
@@ -205,7 +234,11 @@ namespace Pure.Profiler.Data
         {
             get
             {
-                return _connection.ConnectionTimeout;
+                if (_connection != null)
+                {
+                    return _connection.ConnectionTimeout;
+                }
+                return 0;
             }
         }
 
@@ -215,6 +248,10 @@ namespace Pure.Profiler.Data
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+            if (Configuration.ConfigurationHelper.LoadPureProfilerConfigurationSection().EnableDbPool == true)
+            {
+                return;
+            }
             if (disposing)
             {
                 if (_connection != null)
@@ -227,6 +264,7 @@ namespace Pure.Profiler.Data
                     _connection.Dispose();
                 }
             }
+            
             _connection = null;
             _getDbProfiler = null;
 
@@ -240,7 +278,12 @@ namespace Pure.Profiler.Data
         /// <returns></returns>
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
-            return _connection.OpenAsync(cancellationToken);
+            if (_connection != null)
+            {
+
+                return _connection.OpenAsync(cancellationToken);
+            }
+            return  Task.CompletedTask;
         }
 
         /// <summary>

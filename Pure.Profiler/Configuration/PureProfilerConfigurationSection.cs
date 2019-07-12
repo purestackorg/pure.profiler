@@ -52,7 +52,13 @@ namespace Pure.Profiler.Configuration
             get { return showError; }
             set { showError = value; }
         }
-
+        private bool enableDbPool = false;
+     
+        public bool EnableDbPool
+        {
+            get { return (bool)enableDbPool; }
+            set { enableDbPool = value; }
+        }
         private bool enableProxy = false;
         /// <summary>
         /// 是否启用Proxy代理 获取web response内容
