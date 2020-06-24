@@ -2,10 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.5.4</Version>
+    <Version>1.5.5.5</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>1.5.5.4</AssemblyVersion>
-    <FileVersion>1.5.5.4</FileVersion>
+    <AssemblyVersion>1.5.5.5</AssemblyVersion>
+    <FileVersion>1.5.5.5</FileVersion>
+
+    <Copyright>Copyright © Benson Kwok  2015</Copyright>
+    <PackageId>Pure.Profiler.DbProfilingStorage</PackageId>
+    <Title>Pure.Profiler.DbProfilingStorage</Title>
+    <PackageTags>Pure.Profiler.DbProfilingStorage</PackageTags>
+    <Authors>郭建斌</Authors>
+    <Description>
+      PureProfiler DbProfilingStorage
+    </Description>
+    <!--<PackageLicenseExpression>MIT</PackageLicenseExpression>-->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIconUrl>https://auth.gdcic.net/content/images/purelogo.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/purestackorg/pure.profiler</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/purestackorg/pure.profiler</RepositoryUrl>
+    
   </PropertyGroup>
 
   <ItemGroup>

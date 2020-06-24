@@ -1,13 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.5.5.4</Version>
+    <Version>1.5.5.5</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>Pure.Profiler.Web</Description>
+   
     <PackageReleaseNotes>Pure.Profiler.Web</PackageReleaseNotes>
-    <FileVersion>1.5.5.3</FileVersion>
-    <AssemblyVersion>1.5.5.4</AssemblyVersion>
+    <FileVersion>1.5.5.5</FileVersion>
+    <AssemblyVersion>1.5.5.5</AssemblyVersion>
+
+    <Copyright>Copyright © Benson Kwok  2015</Copyright>
+    <PackageId>Pure.Profiler.Web</PackageId>
+    <Title>Pure.Profiler.Web</Title>
+    <PackageTags>Pure.Profiler.Web</PackageTags>
+    <Authors>郭建斌</Authors>
+    <Description>
+      PureProfiler Web
+    </Description>
+    <!--<PackageLicenseExpression>MIT</PackageLicenseExpression>-->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIconUrl>https://auth.gdcic.net/content/images/purelogo.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/purestackorg/pure.profiler</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/purestackorg/pure.profiler</RepositoryUrl>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
